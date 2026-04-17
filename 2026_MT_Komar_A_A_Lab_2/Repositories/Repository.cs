@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 #nullable enable
-public sealed class Repository<T> : IRepository<T>
+public class Repository<T> : IRepository<T>
     where T : class
 {
     private readonly DbSet<T> dbSet;
@@ -19,6 +19,8 @@ public sealed class Repository<T> : IRepository<T>
         ArgumentNullException.ThrowIfNull(context);
         this.dbSet = context.Set<T>();
     }
+
+    protected DbSet<T> DbSet => this.dbSet;
 
     public async Task<T?> GetByIdAsync(int id)
     {
