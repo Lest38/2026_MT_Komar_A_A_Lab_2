@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+#nullable enable
 public class PipelineStepExecutionRepository(ApplicationDbContext context)
     : Repository<PipelineStepExecution>(context), IPipelineStepExecutionRepository
 {
@@ -26,10 +27,11 @@ public class PipelineStepExecutionRepository(ApplicationDbContext context)
             .ToListAsync().ConfigureAwait(false);
     }
 
-    public async Task<PipelineStepExecution> GetWithLogsAsync(int id)
+    public async Task<PipelineStepExecution?> GetWithLogsAsync(int id)
     {
         return await this.DbSet
             .Include(pse => pse.IssueLogs)
             .FirstOrDefaultAsync(pse => pse.Id == id).ConfigureAwait(false);
     }
 }
+#nullable disable
