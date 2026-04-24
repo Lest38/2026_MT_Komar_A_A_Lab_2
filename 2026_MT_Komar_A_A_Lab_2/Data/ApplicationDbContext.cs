@@ -56,6 +56,11 @@ namespace Data
                 new StageType { Id = 2, Name = "Test" },
                 new StageType { Id = 3, Name = "Clean" },
                 new StageType { Id = 4, Name = "Run" });
+
+            modelBuilder?.Entity<CpuModel>().HasData(
+                new CpuModel { Id = 1, ModelName = "Intel Core i7-12700K", PhysicalCoreCount = 12, LogicalThreadCount = 20 },
+                new CpuModel { Id = 2, ModelName = "AMD Ryzen 9 5900X", PhysicalCoreCount = 12, LogicalThreadCount = 24 },
+                new CpuModel { Id = 3, ModelName = "Intel Core i9-13900K", PhysicalCoreCount = 24, LogicalThreadCount = 32 });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
