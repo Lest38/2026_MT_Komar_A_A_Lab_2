@@ -12,7 +12,9 @@ public class PipelineRunner(
     ILogger<PipelineRunner> logger,
     ConfigurationService configService,
     GitService gitService,
-    DotNetService dotNetService)
+    DotNetService dotNetService,
+    ProcessRunner processRunner,
+    DatabaseRecorder dbRecorder)
 {
     private const string DotnetCommand = "dotnet";
     private const string GitCommand = "git";
@@ -22,6 +24,9 @@ public class PipelineRunner(
     private readonly ConfigurationService _configService = configService;
     private readonly GitService _gitService = gitService;
     private readonly DotNetService _dotNetService = dotNetService;
+    private readonly ProcessRunner _processRunner = processRunner;
+    private readonly DatabaseRecorder _dbRecorder = dbRecorder;
+
     private readonly Dictionary<string, DateTime> _stageTimings = [];
 
     public async Task<int> RunPipelineAsync(string configPath, string targetDir)
@@ -54,6 +59,8 @@ public class PipelineRunner(
     {
         stats.StageNumber++;
 
+        var stepId = await _dbRecorder.StartPipelineStepAsync(stage.Name, stage.Command, stage.Args);
+
         var stageStopwatch = Stopwatch.StartNew();
         var result = await ExecuteStageAsync(stage, targetDir);
         stageStopwatch.Stop();
@@ -61,6 +68,13 @@ public class PipelineRunner(
         _stageTimings[stage.Name] = DateTime.Now;
 
         LogStageExecution(stage, stats.StageNumber, stats.TotalStages, result, stageStopwatch.ElapsedMilliseconds);
+
+        var (errorCount, warningCount) = ParseIssuesFromOutput(result.Output, result.Errors);
+
+        await RecordIssuesAsync(stepId, result.Output, result.Errors);
+
+        await _dbRecorder.CompletePipelineStepAsync(stepId, result.IsSuccess, result.ExitCode,
+            stageStopwatch.ElapsedMilliseconds, errorCount, warningCount);
 
         if (result.IsSuccess)
         {
@@ -71,6 +85,66 @@ public class PipelineRunner(
 
         stats.FailedStages++;
         return HandleFailedStage(stage, result);
+    }
+
+    private (int errors, int warnings) ParseIssuesFromOutput(string output, string errors)
+    {
+        var errorCount = 0;
+        var warningCount = 0;
+
+        var combined = (output + " " + errors).ToLower();
+
+        errorCount += CountOccurrences(combined, "error");
+        errorCount += CountOccurrences(combined, "failed");
+        errorCount += CountOccurrences(combined, "exception");
+
+        warningCount += CountOccurrences(combined, "warning");
+        warningCount += CountOccurrences(combined, "warn");
+
+        return (errorCount, warningCount);
+    }
+
+    private int CountOccurrences(string text, string word)
+    {
+        if (string.IsNullOrEmpty(text)) return 0;
+
+        var count = 0;
+        var index = 0;
+
+        while ((index = text.IndexOf(word, index, StringComparison.OrdinalIgnoreCase)) != -1)
+        {
+            count++;
+            index += word.Length;
+        }
+
+        return count;
+    }
+
+    private async Task RecordIssuesAsync(int stepId, string output, string errors)
+    {
+        var combined = output + "\n" + errors;
+        var lines = combined.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var line in lines)
+        {
+            if (line.Contains("error", StringComparison.OrdinalIgnoreCase))
+            {
+                await _dbRecorder.AddIssueLogAsync(stepId, "Error",
+                    ExtractCode(line), line.Trim());
+            }
+            else if (line.Contains("warning", StringComparison.OrdinalIgnoreCase) ||
+                     line.Contains("warn", StringComparison.OrdinalIgnoreCase))
+            {
+                await _dbRecorder.AddIssueLogAsync(stepId, "Warning",
+                    ExtractCode(line), line.Trim());
+            }
+        }
+    }
+
+    private string ExtractCode(string line)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(line, @"[A-Z]{2}\d{4}");
+        return match.Success ? match.Value : "N/A";
     }
 
     private void LogStageExecution(PipelineItem stage, int stageNumber, int totalStages, ProcessResult result, long durationMs)

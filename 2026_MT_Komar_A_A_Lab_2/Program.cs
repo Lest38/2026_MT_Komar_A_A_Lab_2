@@ -1,24 +1,21 @@
 ﻿using System;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Data;
-using Entities;
-using Factories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UnitsOfWork;
 
-namespace DesignTimeDbContextFactory;
+namespace Program;
 
 internal static class Program
 {
-    private static async Task Main()
+    public static async Task Main(string[] args)
     {
         var services = new ServiceCollection();
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite("Data Source=app.db"));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IDataFactory, DefaultDataFactory>();
 
         var serviceProvider = services.BuildServiceProvider();
 
@@ -28,39 +25,21 @@ internal static class Program
 
         await dbContext.Database.MigrateAsync().ConfigureAwait(false);
 
-        await InitializeData(unitOfWork).ConfigureAwait(false);
-
-        await DemonstrateWorkflow(unitOfWork).ConfigureAwait(false);
+        await ShowStatistics(unitOfWork).ConfigureAwait(false);
     }
 
-    private static async Task InitializeData(IUnitOfWork unitOfWork)
+    private static async Task ShowStatistics(IUnitOfWork unitOfWork)
     {
-        var projectFolder = Path.GetTempPath() + "TestProject";
+        var projects = await unitOfWork.Projects.GetAllAsync().ConfigureAwait(false);
+        Console.WriteLine($"Projects: {projects.Count()}");
 
-        var existingProject = await unitOfWork.Projects
-            .GetByFolderPathAsync(projectFolder)
-            .ConfigureAwait(false);
+        var steps = await unitOfWork.PipelineStepExecutions.GetAllAsync().ConfigureAwait(false);
+        Console.WriteLine($"Pipeline Steps: {steps.Count()}");
 
-        if (existingProject != null)
-        {
-            Console.WriteLine($"Project already exists (Id: {existingProject.Id})");
-            Console.WriteLine($"   Path: {existingProject.FolderPath}");
-            return;
-        }
+        var logs = await unitOfWork.IssueLogs.GetAllAsync().ConfigureAwait(false);
+        Console.WriteLine($"Total Logs: {logs.Count()}");
 
-        var project = new Project
-        {
-            Name = "TestProject",
-            FolderPath = projectFolder,
-        };
-        await unitOfWork.Projects.AddAsync(project).ConfigureAwait(false);
-        await unitOfWork.SaveChangesAsync().ConfigureAwait(false);
-        Console.WriteLine($"Project created (Id: {project.Id}) at: {projectFolder}");
-    }
-
-    // TODO: Implement a demonstration of the workflow that creates a project, adds stages, executes pipeline steps, and logs issues.
-    private static async Task DemonstrateWorkflow(IUnitOfWork unitOfWork)
-    {
-        throw new NotImplementedException("Implement the workflow demonstration here.");
+        var metrics = await unitOfWork.ThreadSpeedMetrics.GetAllAsync().ConfigureAwait(false);
+        Console.WriteLine($"Performance Metrics: {metrics.Count()}");
     }
 }

@@ -1,10 +1,13 @@
 ﻿using _2026_MT_Komar_A_A_Lab__.Services;
 using _2026_MT_Komar_A_A_Lab__.Utilities;
+using Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using UnitsOfWork;
 
 namespace _2026_MT_Komar_A_A_Lab__;
 
@@ -77,8 +80,19 @@ static class Program
         Console.ReadKey();
     }
 
-    private static void ConfigureServices(IServiceCollection services, string logFilePath)
+    // In Program.cs - ConfigureServices method
+    private static void ConfigureServices(IServiceCollection services, string targetDir)
     {
+        var logFilePath = LogFileGenerator.GenerateLogFilePath(targetDir);
+        Console.WriteLine($"# Add migration\r\ndotnet ef migrations add InitialCreate\r\n\r\n# Update database\r\ndotnet ef database updateLog file: {logFilePath}");
+
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite($"Data Source={Path.Combine(targetDir, "ci_cd.db")}"));
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddScoped<DatabaseRecorder>();
+
         services.AddLogging(configure =>
         {
             configure.AddConsole();
