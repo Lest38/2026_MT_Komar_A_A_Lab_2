@@ -7,7 +7,5 @@ public interface IDataFactory
 {
     Host CreateHost();
 
-    IEnumerable<CpuModel> CreateCpuModels();
-
     IEnumerable<PerformanceTest> CreatePerformanceTests();
 }
