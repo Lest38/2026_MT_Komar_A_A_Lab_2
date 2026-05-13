@@ -2,11 +2,13 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Data;
+using Entities;
+using Factories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UnitsOfWork;
 
-namespace Program;
+namespace DesignTimeDbContextFactory;
 
 internal static class Program
 {

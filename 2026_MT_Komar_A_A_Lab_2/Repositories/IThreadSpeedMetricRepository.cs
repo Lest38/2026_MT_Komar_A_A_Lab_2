@@ -1,6 +1,6 @@
 ﻿namespace Repositories;
 
-using Factories;
+using Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

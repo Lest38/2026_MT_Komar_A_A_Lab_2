@@ -1,7 +1,7 @@
 ﻿namespace Repositories;
 
 using Data;
-using Factories;
+using Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
