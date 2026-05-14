@@ -1,4 +1,4 @@
-﻿namespace _2026_MT_Komar_A_A_Lab__.Models
+﻿namespace Models
 {
     public static class TimeoutDefaults
     {

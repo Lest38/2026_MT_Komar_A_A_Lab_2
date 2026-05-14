@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace _2026_MT_Komar_A_A_Lab__.Models
+namespace Models
 {
     public class PipelineItem
     {
@@ -21,9 +21,9 @@ namespace _2026_MT_Komar_A_A_Lab__.Models
         public int TimeoutSeconds { get; set; } = 300;
 
         [JsonPropertyName("workingDirectory")]
-        public string? WorkingDirectory { get; set; }
+        public string WorkingDirectory { get; set; }
 
         [JsonPropertyName("environment")]
-        public Dictionary<string, string>? Environment { get; set; }
+        public Dictionary<string, string> Environment { get; }
     }
 }

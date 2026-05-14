@@ -1,35 +1,31 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
-namespace _2026_MT_Komar_A_A_Lab__.Services;
+namespace Services;
 
+#nullable enable
 public class ProjectResolver(ILogger<ProjectResolver> logger)
 {
-    private readonly ILogger<ProjectResolver> _logger = logger;
+    private static readonly Action<ILogger, string, Exception?> LogAutoSelectedProject =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(5001, nameof(ResolveProjectIfNeeded)),
+            "Auto-selected project: {ProjectName}");
 
-    public string ResolveProjectIfNeeded(string targetDir, string args)
-    {
-        if (args.Contains("--project"))
-        {
-            return args;
-        }
+    private static readonly Action<ILogger, Exception?> LogMultipleProjectsFound =
+        LoggerMessage.Define(
+            LogLevel.Warning,
+            new EventId(5002, nameof(ResolveProjectIfNeeded)),
+            "Multiple projects found, please specify --project in args:");
 
-        var projectFiles = FindProjectFiles(targetDir);
+    private static readonly Action<ILogger, string, Exception?> LogProjectWarning =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(5003, nameof(ResolveProjectIfNeeded)),
+            "  - {Project}");
 
-        if (projectFiles.Length == 1)
-        {
-            var projectName = Path.GetFileName(projectFiles[0]);
-            _logger.LogInformation("Auto-selected project: {ProjectName}", projectName);
-            return $"{args} --project {projectName}";
-        }
-
-        if (projectFiles.Length > 1)
-        {
-            LogMultipleProjectsWarning(projectFiles);
-        }
-
-        return args;
-    }
+    private readonly ILogger<ProjectResolver> logger = logger;
 
     public static string[] FindProjectFiles(string targetDir)
     {
@@ -43,12 +39,33 @@ public class ProjectResolver(ILogger<ProjectResolver> logger)
         return projectFiles;
     }
 
-    private void LogMultipleProjectsWarning(string[] projectFiles)
+    public string ResolveProjectIfNeeded(string targetDir, string args)
     {
-        _logger.LogWarning("Multiple projects found, please specify --project in args:");
-        foreach (var proj in projectFiles)
+        ArgumentNullException.ThrowIfNull(args);
+
+        if (args.Contains("--project", StringComparison.Ordinal))
         {
-            _logger.LogWarning("  - {Project}", Path.GetFileName(proj));
+            return args;
         }
+
+        var projectFiles = FindProjectFiles(targetDir);
+
+        if (projectFiles.Length == 1)
+        {
+            var projectName = Path.GetFileName(projectFiles[0]);
+            LogAutoSelectedProject(this.logger, projectName, null);
+            return $"{args} --project {projectName}";
+        }
+
+        if (projectFiles.Length > 1)
+        {
+            LogMultipleProjectsFound(this.logger, null);
+            foreach (var proj in projectFiles)
+            {
+                LogProjectWarning(this.logger, Path.GetFileName(proj), null);
+            }
+        }
+
+        return args;
     }
 }

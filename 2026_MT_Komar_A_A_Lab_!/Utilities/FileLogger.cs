@@ -1,31 +1,26 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
-namespace _2026_MT_Komar_A_A_Lab__.Utilities
+#nullable enable
+namespace Utilities
 {
     public class FileLogger : ILogger, IDisposable
     {
-        private readonly string _filePath;
-        private static readonly object _lock = new();
-        private bool _disposed;
+        private static readonly object Lock = new
+            ();
+
+        private readonly string filePath;
+        private bool disposed;
 
         public FileLogger(string filePath)
         {
-            _filePath = filePath;
-            EnsureDirectoryExists();
+            this.filePath = filePath;
+            this.EnsureDirectoryExists();
         }
 
-        private void EnsureDirectoryExists()
-        {
-            var directory = Path.GetDirectoryName(_filePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-        }
-
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
             => default!;
 
         public bool IsEnabled(LogLevel logLevel) => true;
@@ -37,10 +32,12 @@ namespace _2026_MT_Komar_A_A_Lab__.Utilities
             Exception? exception,
             Func<TState, Exception?, string> formatter)
         {
-            if (!IsEnabled(logLevel) || _disposed)
+            if (!this.IsEnabled(logLevel) || this.disposed)
+            {
                 return;
+            }
 
-            var message = formatter(state, exception);
+            var message = formatter != null ? formatter(state, exception) : string.Empty;
             var logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{logLevel}] {message}";
 
             if (exception != null)
@@ -48,32 +45,43 @@ namespace _2026_MT_Komar_A_A_Lab__.Utilities
                 logEntry += $"{Environment.NewLine}{exception}";
             }
 
-            lock (_lock)
+            lock (Lock)
             {
-                if (!_disposed)
+                if (!this.disposed)
                 {
-                    File.AppendAllText(_filePath, logEntry + Environment.NewLine);
+                    File.AppendAllText(this.filePath, logEntry + Environment.NewLine);
                 }
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (this.disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
                 // Nothing to dispose, file is closed automatically
             }
 
-            _disposed = true;
+            this.disposed = true;
+        }
+
+        private void EnsureDirectoryExists()
+        {
+            var directory = Path.GetDirectoryName(this.filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
         }
     }
 }

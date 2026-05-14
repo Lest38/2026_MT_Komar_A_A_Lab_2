@@ -1,31 +1,48 @@
-﻿using _2026_MT_Komar_A_A_Lab__.Models;
+﻿using System;
 using Microsoft.Extensions.Logging;
-using System;
+using Models;
 
-namespace _2026_MT_Komar_A_A_Lab__.Services;
+namespace Services;
 
+#nullable enable
 public class ConfigurationService(ILogger<ConfigurationService> logger, ConfigReader configReader)
 {
-    private readonly ILogger<ConfigurationService> _logger = logger;
-    private readonly ConfigReader _configReader = configReader;
+    private static readonly Action<ILogger, string, Exception?> LogFailedToLoadConfig =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(3001, nameof(LoadConfiguration)),
+            "Failed to load configuration from {ConfigPath}");
+
+    private static readonly Action<ILogger, int, Exception?> LogLoadedStages =
+        LoggerMessage.Define<int>(
+            LogLevel.Information,
+            new EventId(3002, nameof(LoadConfiguration)),
+            "Loaded {StageCount} stages from configuration");
+
+    private static readonly Action<ILogger, string, string, string, bool, Exception?> LogStageDebug =
+        LoggerMessage.Define<string, string, string, bool>(
+            LogLevel.Debug,
+            new EventId(3003, nameof(LoadConfiguration)),
+            "Stage: {StageName} | Command: {Command} {Args} | StopOnFailure: {StopOnFailure}");
+
+    private readonly ILogger<ConfigurationService> logger = logger;
+    private readonly ConfigReader configReader = configReader;
 
     public PipelineConfig LoadConfiguration(string configPath)
     {
-        var config = _configReader.ReadConfig(configPath);
+        var config = this.configReader.ReadConfig(configPath);
 
         if (config == null)
         {
-            _logger.LogError("Failed to load configuration from {ConfigPath}", configPath);
+            LogFailedToLoadConfig(this.logger, configPath, null);
             throw new InvalidOperationException($"Failed to load configuration from {configPath}");
         }
 
-        _logger.LogInformation("Loaded {StageCount} stages from configuration", config.Pipeline.Count);
+        LogLoadedStages(this.logger, config.Pipeline.Count, null);
 
         foreach (var stage in config.Pipeline)
         {
-            _logger.LogDebug(
-                "Stage: {StageName} | Command: {Command} {Args} | StopOnFailure: {StopOnFailure}",
-                stage.Name, stage.Command, stage.Args, stage.StopOnFailure);
+            LogStageDebug(this.logger, stage.Name, stage.Command, stage.Args, stage.StopOnFailure, null);
         }
 
         return config;

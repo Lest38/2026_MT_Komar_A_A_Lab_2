@@ -1,38 +1,41 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using Microsoft.Extensions.Logging;
 
-namespace _2026_MT_Komar_A_A_Lab__.Utilities
+namespace Utilities
 {
-    public class FileLoggerProvider(string filePath) : ILoggerProvider
+    public class FileLoggerProvider(string filePath)
+        : ILoggerProvider
     {
-        private readonly string _filePath = filePath;
-        private FileLogger? _logger;
-        private bool _disposed;
+        private readonly string filePath = filePath;
+        private FileLogger logger;
+        private bool disposed;
 
         public ILogger CreateLogger(string categoryName)
         {
-            _logger = new FileLogger(_filePath);
-            return _logger;
+            this.logger = new FileLogger(this.filePath);
+            return this.logger;
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed)
+            if (this.disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
-                _logger?.Dispose();
-                _logger = null;
+                this.logger?.Dispose();
+                this.logger = null;
             }
 
-            _disposed = true;
+            this.disposed = true;
         }
     }
 }

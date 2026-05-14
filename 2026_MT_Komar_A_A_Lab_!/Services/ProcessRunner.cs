@@ -1,15 +1,17 @@
-﻿using _2026_MT_Komar_A_A_Lab__.Models;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Models;
 
-namespace _2026_MT_Komar_A_A_Lab__.Services;
+namespace Services;
 
+#nullable enable
 public class ProcessRunner : IDisposable
 {
-    private Process? _currentProcess;
-    private bool _disposed;
+    private Process? currentProcess;
+    private bool disposed;
 
     public static async Task<ProcessResult> RunCommandAsync(
         string fileName,
@@ -23,7 +25,7 @@ public class ProcessRunner : IDisposable
             Command = fileName,
             Arguments = arguments,
             WorkingDirectory = workingDirectory,
-            StartTime = DateTime.Now
+            StartTime = DateTime.Now,
         };
 
         var psi = new ProcessStartInfo
@@ -34,7 +36,7 @@ public class ProcessRunner : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
 
         using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
@@ -45,13 +47,17 @@ public class ProcessRunner : IDisposable
         process.OutputDataReceived += (s, e) =>
         {
             if (e.Data != null)
+            {
                 outputBuilder.AppendLine(e.Data);
+            }
         };
 
         process.ErrorDataReceived += (s, e) =>
         {
             if (e.Data != null)
+            {
                 errorBuilder.AppendLine(e.Data);
+            }
         };
 
         try
@@ -73,11 +79,20 @@ public class ProcessRunner : IDisposable
 
             if (timeoutSeconds > 0)
             {
-                exited = process.WaitForExit(timeoutSeconds * 1000);
+                using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+                try
+                {
+                    await process.WaitForExitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                    exited = true;
+                }
+                catch (OperationCanceledException)
+                {
+                    exited = false;
+                }
             }
             else
             {
-                await process.WaitForExitAsync();
+                await process.WaitForExitAsync().ConfigureAwait(false);
                 exited = true;
             }
 
@@ -96,11 +111,6 @@ public class ProcessRunner : IDisposable
             result.Output = outputBuilder.ToString();
             result.Errors = errorBuilder.ToString();
         }
-        catch (Exception ex)
-        {
-            result.ExitCode = -1;
-            result.Errors = ex.Message;
-        }
         finally
         {
             result.EndTime = DateTime.Now;
@@ -112,29 +122,39 @@ public class ProcessRunner : IDisposable
 
     public void Dispose()
     {
-        Dispose(true);
+        this.Dispose(true);
         GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed)
+        if (this.disposed)
+        {
             return;
+        }
 
-        if (disposing && _currentProcess != null && !_currentProcess.HasExited)
+        if (disposing && this.currentProcess != null && !this.currentProcess.HasExited)
         {
             try
             {
-                _currentProcess.Kill();
+                this.currentProcess.Kill();
+                this.currentProcess.Dispose();
             }
-            catch
+            catch (InvalidOperationException)
             {
-                // The process have already exited or we can't kill it, so we ignore exceptions here
+                // Process already exited
             }
-            _currentProcess.Dispose();
-            _currentProcess = null;
+            catch (System.ComponentModel.Win32Exception)
+            {
+                // Cannot kill the process
+            }
+            finally
+            {
+                this.currentProcess = null;
+            }
         }
 
-        _disposed = true;
+        this.disposed = true;
     }
 }
+#nullable restore

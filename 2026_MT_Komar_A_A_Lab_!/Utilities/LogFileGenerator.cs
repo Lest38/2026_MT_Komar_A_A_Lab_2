@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 
-namespace _2026_MT_Komar_A_A_Lab__.Utilities;
+namespace Utilities;
 
 public static class LogFileGenerator
 {
@@ -9,7 +10,7 @@ public static class LogFileGenerator
     {
         var dirName = new DirectoryInfo(targetDir).Name;
 
-        var timestamp = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
+        var timestamp = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss", CultureInfo.InvariantCulture);
 
         var fileName = $"CICD_{dirName}_{timestamp}.log";
 

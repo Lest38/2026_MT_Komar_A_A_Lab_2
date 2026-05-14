@@ -1,25 +1,81 @@
-﻿using _2026_MT_Komar_A_A_Lab__.Models;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Models;
 
-namespace _2026_MT_Komar_A_A_Lab__.Services;
+namespace Services;
 
+#nullable enable
 public class GitService(ILogger<GitService> logger)
 {
-    private readonly ILogger<GitService> _logger = logger;
+    private static readonly Action<ILogger, string, int, Exception?> LogTargetDirectoryNotEmpty =
+        LoggerMessage.Define<string, int>(
+            LogLevel.Warning,
+            new EventId(4001, nameof(CloneAsync)),
+            "Target directory {TargetDir} is not empty. Found {FileCount} files.");
 
-    public async Task<ProcessResult> CloneAsync(string targetDir, string repoUrl)
+    private static readonly Action<ILogger, string, Exception?> LogCreatedParentDirectory =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(4002, nameof(CloneAsync)),
+            "Created parent directory: {ParentDir}");
+
+    private static readonly Action<ILogger, string, string, Exception?> LogCloningRepository =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Information,
+            new EventId(4003, nameof(CloneAsync)),
+            "Cloning repository {RepoUrl} to {TargetDir}");
+
+    private static readonly Action<ILogger, string, Exception?> LogPullingChanges =
+        LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(4004, nameof(PullAsync)),
+            "Pulling latest changes in {TargetDir}");
+
+    private readonly ILogger<GitService> logger = logger;
+
+    public static async Task<ProcessResult> GetCurrentBranchAsync(string targetDir)
     {
+        if (!TryEnsureDirectoryExists(targetDir, out var errorResult))
+        {
+            return errorResult!;
+        }
+
+        return await ProcessRunner.RunCommandAsync(
+            "git",
+            "rev-parse --abbrev-ref HEAD",
+            targetDir)
+            .ConfigureAwait(false);
+    }
+
+    public static async Task<ProcessResult> GetStatusAsync(string targetDir)
+    {
+        if (!TryEnsureDirectoryExists(targetDir, out var errorResult))
+        {
+            return errorResult!;
+        }
+
+        return await ProcessRunner.RunCommandAsync(
+            "git",
+            "status --short",
+            targetDir)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<ProcessResult> CloneAsync(string targetDir, Uri repoUrl)
+    {
+        ArgumentNullException.ThrowIfNull(repoUrl);
+
         string cloneTargetDir = targetDir;
         string? repoSubDir;
 
-        var parts = repoUrl.Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        var parts = repoUrl.OriginalString.Split([' '], StringSplitOptions.RemoveEmptyEntries);
+        string repoUrlString = repoUrl.OriginalString;
         if (parts.Length > 1)
         {
-            repoUrl = parts[0];
+            repoUrlString = parts[0];
             repoSubDir = parts[1];
             cloneTargetDir = Path.Combine(targetDir, repoSubDir);
         }
@@ -30,10 +86,11 @@ public class GitService(ILogger<GitService> logger)
 
             if (files.Length > 0)
             {
-                _logger.LogWarning("Target directory {TargetDir} is not empty. Found {FileCount} files.",
-                    cloneTargetDir, files.Length);
+                LogTargetDirectoryNotEmpty(this.logger, cloneTargetDir, files.Length, null);
 
-                return CreateSuccessResult("git", $"clone {repoUrl}",
+                return CreateSuccessResult(
+                    "git",
+                    $"clone {repoUrlString}",
                     $"Directory {cloneTargetDir} already exists and contains {files.Length} files. Skipping clone.");
             }
         }
@@ -43,55 +100,46 @@ public class GitService(ILogger<GitService> logger)
             if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
             {
                 Directory.CreateDirectory(parentDir);
-                _logger.LogInformation("Created parent directory: {ParentDir}", parentDir);
+                LogCreatedParentDirectory(this.logger, parentDir, null);
             }
         }
 
-        _logger.LogInformation("Cloning repository {RepoUrl} to {TargetDir}", repoUrl, cloneTargetDir);
+        LogCloningRepository(this.logger, repoUrlString, cloneTargetDir, null);
         return await ProcessRunner.RunCommandAsync(
             "git",
-            $"clone {repoUrl} {cloneTargetDir}",
+            $"clone {repoUrlString} {cloneTargetDir}",
             ".",
-            timeoutSeconds: TimeoutDefaults.Clone
-        );
+            timeoutSeconds: TimeoutDefaults.Clone)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<ProcessResult> CloneAsync(string targetDir, string repoUrl)
+    {
+        repoUrl ??= string.Empty;
+        if (Uri.TryCreate(repoUrl.Split([' '], StringSplitOptions.RemoveEmptyEntries)[0], UriKind.Absolute, out var uri))
+        {
+            return await this.CloneAsync(targetDir, uri).ConfigureAwait(false);
+        }
+        else
+        {
+            return CreateErrorResult("clone", targetDir, $"Invalid repository URL: {repoUrl}");
+        }
     }
 
     public async Task<ProcessResult> PullAsync(string targetDir)
     {
         if (!TryEnsureDirectoryExists(targetDir, out var errorResult))
+        {
             return errorResult!;
+        }
 
-        _logger.LogInformation("Pulling latest changes in {TargetDir}", targetDir);
+        LogPullingChanges(this.logger, targetDir, null);
         return await ProcessRunner.RunCommandAsync(
             "git",
             "pull",
             targetDir,
-            timeoutSeconds: TimeoutDefaults.Pull
-        );
-    }
-
-    public static async Task<ProcessResult> GetCurrentBranchAsync(string targetDir)
-    {
-        if (!TryEnsureDirectoryExists(targetDir, out var errorResult))
-            return errorResult!;
-
-        return await ProcessRunner.RunCommandAsync(
-            "git",
-            "rev-parse --abbrev-ref HEAD",
-            targetDir
-        );
-    }
-
-    public static async Task<ProcessResult> GetStatusAsync(string targetDir)
-    {
-        if (!TryEnsureDirectoryExists(targetDir, out var errorResult))
-            return errorResult!;
-
-        return await ProcessRunner.RunCommandAsync(
-            "git",
-            "status --short",
-            targetDir
-        );
+            timeoutSeconds: TimeoutDefaults.Pull)
+            .ConfigureAwait(false);
     }
 
     private static bool TryEnsureDirectoryExists(string targetDir, out ProcessResult? errorResult)
@@ -101,6 +149,7 @@ public class GitService(ILogger<GitService> logger)
             errorResult = CreateErrorResult("command", targetDir, "Directory does not exist");
             return false;
         }
+
         errorResult = null;
         return true;
     }
@@ -114,7 +163,7 @@ public class GitService(ILogger<GitService> logger)
             ExitCode = -1,
             Errors = $"{errorMessage}: {targetDir}",
             StartTime = DateTime.Now,
-            EndTime = DateTime.Now
+            EndTime = DateTime.Now,
         };
     }
 
@@ -127,7 +176,8 @@ public class GitService(ILogger<GitService> logger)
             ExitCode = 0,
             Output = output,
             StartTime = DateTime.Now,
-            EndTime = DateTime.Now
+            EndTime = DateTime.Now,
         };
     }
 }
+#nullable restore
