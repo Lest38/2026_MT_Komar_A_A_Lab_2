@@ -5,6 +5,7 @@ using Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
+#nullable enable
 public class PerformanceTestRepository(ApplicationDbContext context)
     : Repository<PerformanceTest>(context), IPerformanceTestRepository
 {
@@ -13,3 +14,4 @@ public class PerformanceTestRepository(ApplicationDbContext context)
         return await this.DbSet.FirstOrDefaultAsync(pt => pt.Description == description).ConfigureAwait(false);
     }
 }
+#nullable disable

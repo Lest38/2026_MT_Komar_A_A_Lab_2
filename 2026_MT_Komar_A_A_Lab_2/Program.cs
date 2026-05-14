@@ -9,47 +9,46 @@ using Factories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UnitsOfWork;
-using Utilities;
+using Utilities.ResourceStrings;
 
 namespace DesignTimeDbContextFactory;
 
 public static class Program
 {
-    private static readonly CompositeFormat HostAlreadySeededFormat = CompositeFormat.Parse(ResourceStrings.Host.AlreadySeeded);
-    private static readonly CompositeFormat HostCreatedFormat = CompositeFormat.Parse(ResourceStrings.Host.Created);
-    private static readonly CompositeFormat PerformanceTestAlreadyExistsFormat = CompositeFormat.Parse(ResourceStrings.PerformanceTest.AlreadyExists);
-    private static readonly CompositeFormat PerformanceTestCreatedFormat = CompositeFormat.Parse(ResourceStrings.PerformanceTest.Created);
-    private static readonly CompositeFormat ProjectAlreadyExistsFormat = CompositeFormat.Parse(ResourceStrings.Project.AlreadyExists);
-    private static readonly CompositeFormat ProjectCreatedFormat = CompositeFormat.Parse(ResourceStrings.Project.Created);
-    private static readonly CompositeFormat PipelineStepInfoFormat = CompositeFormat.Parse(ResourceStrings.PipelineStep.StepInfo);
-    private static readonly CompositeFormat PipelineIssueLogsCommittedFormat = CompositeFormat.Parse(ResourceStrings.PipelineStep.IssueLogsCommitted);
-    private static readonly CompositeFormat PipelineReadBackInfoFormat = CompositeFormat.Parse(ResourceStrings.PipelineStep.ReadBackInfo);
-    private static readonly CompositeFormat PipelineLogEntryFormat = CompositeFormat.Parse(ResourceStrings.PipelineStep.LogEntry);
-    private static readonly CompositeFormat PipelineTransactionRolledBackFormat = CompositeFormat.Parse(ResourceStrings.PipelineStep.TransactionRolledBack);
-    private static readonly CompositeFormat ThreadSpeedMetricAlreadyRecordedFormat = CompositeFormat.Parse(ResourceStrings.ThreadSpeedMetric.AlreadyRecorded);
-    private static readonly CompositeFormat ThreadSpeedMetricSavedFormat = CompositeFormat.Parse(ResourceStrings.ThreadSpeedMetric.MetricSaved);
-    private static readonly CompositeFormat DatabaseSummaryProjectEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.ProjectEntry);
-    private static readonly CompositeFormat DatabaseSummaryStepEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.StepEntry);
-    private static readonly CompositeFormat DatabaseSummaryPipelineStepsFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.PipelineSteps);
-    private static readonly CompositeFormat DatabaseSummaryIssueLogsFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.IssueLogs);
-    private static readonly CompositeFormat DatabaseSummaryIssueEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.IssueEntry);
-    private static readonly CompositeFormat DatabaseSummaryThreadSpeedMetricsFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.ThreadSpeedMetrics);
-    private static readonly CompositeFormat DatabaseSummaryMetricEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.MetricEntry);
-    private static readonly CompositeFormat DatabaseSummaryStageTypesFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.StageTypes);
-    private static readonly CompositeFormat DatabaseSummaryStageTypeEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.StageTypeEntry);
-    private static readonly CompositeFormat DatabaseSummaryCpuModelsFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.CpuModels);
-    private static readonly CompositeFormat DatabaseSummaryCpuModelEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.CpuModelEntry);
-    private static readonly CompositeFormat DatabaseSummaryHostsFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.Hosts);
-    private static readonly CompositeFormat DatabaseSummaryHostEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.HostEntry);
-    private static readonly CompositeFormat DatabaseSummaryPerformanceTestsFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.PerformanceTests);
-    private static readonly CompositeFormat DatabaseSummaryPerformanceTestEntryFormat = CompositeFormat.Parse(ResourceStrings.DatabaseSummary.PerformanceTestEntry);
-    private static readonly CompositeFormat BannerFormat = CompositeFormat.Parse(ResourceStrings.ConsoleMessages.BannerFormat);
+    private const string HostAlreadySeededFormat = Utilities.ResourceStrings.Host.AlreadySeeded;
+    private const string HostCreatedFormat = Utilities.ResourceStrings.Host.Created;
+    private const string PerformanceTestAlreadyExistsFormat = Utilities.ResourceStrings.PerformanceTest.AlreadyExists;
+    private const string PerformanceTestCreatedFormat = Utilities.ResourceStrings.PerformanceTest.Created;
+    private const string ProjectAlreadyExistsFormat = Utilities.ResourceStrings.Project.AlreadyExists;
+    private const string ProjectCreatedFormat = Utilities.ResourceStrings.Project.Created;
+    private const string PipelineStepInfoFormat = Utilities.ResourceStrings.PipelineStep.StepInfo;
+    private const string PipelineIssueLogsCommittedFormat = Utilities.ResourceStrings.PipelineStep.IssueLogsCommitted;
+    private const string PipelineReadBackInfoFormat = Utilities.ResourceStrings.PipelineStep.ReadBackInfo;
+    private const string PipelineLogEntryFormat = Utilities.ResourceStrings.PipelineStep.LogEntry;
+    private const string PipelineTransactionRolledBackFormat = Utilities.ResourceStrings.PipelineStep.TransactionRolledBack;
+    private const string ThreadSpeedMetricAlreadyRecordedFormat = Utilities.ResourceStrings.ThreadSpeedMetric.AlreadyRecorded;
+    private const string ThreadSpeedMetricSavedFormat = Utilities.ResourceStrings.ThreadSpeedMetric.MetricSaved;
+    private const string DatabaseSummaryProjectEntryFormat = Utilities.ResourceStrings.DatabaseSummary.ProjectEntry;
+    private const string DatabaseSummaryStepEntryFormat = Utilities.ResourceStrings.DatabaseSummary.StepEntry;
+    private const string DatabaseSummaryPipelineStepsFormat = Utilities.ResourceStrings.DatabaseSummary.PipelineSteps;
+    private const string DatabaseSummaryIssueLogsFormat = Utilities.ResourceStrings.DatabaseSummary.IssueLogs;
+    private const string DatabaseSummaryIssueEntryFormat = Utilities.ResourceStrings.DatabaseSummary.IssueEntry;
+    private const string DatabaseSummaryThreadSpeedMetricsFormat = Utilities.ResourceStrings.DatabaseSummary.ThreadSpeedMetrics;
+    private const string DatabaseSummaryMetricEntryFormat = Utilities.ResourceStrings.DatabaseSummary.MetricEntry;
+    private const string DatabaseSummaryStageTypesFormat = Utilities.ResourceStrings.DatabaseSummary.StageTypes;
+    private const string DatabaseSummaryStageTypeEntryFormat = Utilities.ResourceStrings.DatabaseSummary.StageTypeEntry;
+    private const string DatabaseSummaryCpuModelsFormat = Utilities.ResourceStrings.DatabaseSummary.CpuModels;
+    private const string DatabaseSummaryCpuModelEntryFormat = Utilities.ResourceStrings.DatabaseSummary.CpuModelEntry;
+    private const string DatabaseSummaryHostsFormat = Utilities.ResourceStrings.DatabaseSummary.Hosts;
+    private const string DatabaseSummaryHostEntryFormat = Utilities.ResourceStrings.DatabaseSummary.HostEntry;
+    private const string DatabaseSummaryPerformanceTestsFormat = Utilities.ResourceStrings.DatabaseSummary.PerformanceTests;
+    private const string DatabaseSummaryPerformanceTestEntryFormat = Utilities.ResourceStrings.DatabaseSummary.PerformanceTestEntry;
 
     public static async Task Main()
     {
         var services = new ServiceCollection();
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(ResourceStrings.Database.ConnectionString));
+            options.UseSqlite(Database.ConnectionString));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDataFactory, DefaultDataFactory>();
 
@@ -62,7 +61,7 @@ public static class Program
 
         await dbContext.Database.MigrateAsync().ConfigureAwait(false);
 
-        Banner(ResourceStrings.Database.MigratedUpToDate);
+        Banner(Database.MigratedUpToDate);
 
         var host = await SeedHostAsync(unitOfWork, factory).ConfigureAwait(false);
         await SeedPerformanceTestsAsync(unitOfWork, factory).ConfigureAwait(false);
@@ -72,7 +71,7 @@ public static class Program
         await PrintDatabaseSummaryAsync(unitOfWork).ConfigureAwait(false);
     }
 
-    private static async Task<Host> SeedHostAsync(IUnitOfWork uow, IDataFactory factory)
+    private static async Task<Entities.Host> SeedHostAsync(IUnitOfWork uow, IDataFactory factory)
     {
         var existing = await uow.Hosts.GetDefaultHostAsync().ConfigureAwait(false);
         if (existing is not null)
@@ -117,19 +116,19 @@ public static class Program
         await uow.SaveChangesAsync().ConfigureAwait(false);
     }
 
-    private static async Task<Project> SeedProjectAsync(IUnitOfWork uow)
+    private static async Task<Entities.Project> SeedProjectAsync(IUnitOfWork uow)
     {
-        var existing = await uow.Projects.GetByFolderPathAsync(ResourceStrings.Project.DefaultFolderPath).ConfigureAwait(false);
+        var existing = await uow.Projects.GetByFolderPathAsync(Utilities.ResourceStrings.Project.DefaultFolderPath).ConfigureAwait(false);
         if (existing is not null)
         {
             Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ProjectAlreadyExistsFormat.ToString(), existing.Id, existing.Name));
             return existing;
         }
 
-        var project = new Project
+        var project = new Entities.Project
         {
-            Name = ResourceStrings.Project.DefaultName,
-            FolderPath = ResourceStrings.Project.DefaultFolderPath,
+            Name = Utilities.ResourceStrings.Project.DefaultName,
+            FolderPath = Utilities.ResourceStrings.Project.DefaultFolderPath,
         };
         await uow.Projects.AddAsync(project).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
@@ -137,14 +136,14 @@ public static class Program
         return project;
     }
 
-    private static async Task DemonstratePipelineWorkflowAsync(IUnitOfWork uow, Project project)
+    private static async Task DemonstratePipelineWorkflowAsync(IUnitOfWork uow, Entities.Project project)
     {
         Banner("Pipeline Workflow Demo");
 
         var buildStage = await uow.StageTypes.GetByIdAsync(1).ConfigureAwait(false);
         if (buildStage is null)
         {
-            Banner(ResourceStrings.PipelineStep.StageNotFound);
+            Banner(Utilities.ResourceStrings.PipelineStep.StageNotFound);
             return;
         }
 
@@ -235,15 +234,15 @@ public static class Program
         }
     }
 
-    private static async Task DemonstrateThreadSpeedMetricsAsync(IUnitOfWork uow, Host host)
+    private static async Task DemonstrateThreadSpeedMetricsAsync(IUnitOfWork uow, Entities.Host host)
     {
-        Banner(ResourceStrings.ThreadSpeedMetric.DemoTitle);
+        Banner(Utilities.ResourceStrings.ThreadSpeedMetric.DemoTitle);
 
         var allTests = await uow.PerformanceTests.GetAllAsync().ConfigureAwait(false);
         var perfTest = allTests.FirstOrDefault();
         if (perfTest is null)
         {
-            Banner(ResourceStrings.ThreadSpeedMetric.NoPerformanceTestFound);
+            Banner(Utilities.ResourceStrings.ThreadSpeedMetric.NoPerformanceTestFound);
             return;
         }
 
@@ -251,7 +250,7 @@ public static class Program
         var step = allSteps.FirstOrDefault();
         if (step is null)
         {
-            Banner(ResourceStrings.ThreadSpeedMetric.NoPipelineStepFound);
+            Banner(Utilities.ResourceStrings.ThreadSpeedMetric.NoPipelineStepFound);
             return;
         }
 
@@ -269,7 +268,7 @@ public static class Program
         long parMs = 1_340;
         decimal efficiency = Math.Round((decimal)seqMs / parMs, 4);
 
-        var metric = new ThreadSpeedMetric
+        var metric = new Entities.ThreadSpeedMetric
         {
             PerformanceTestId = perfTest.Id,
             HostId = host.Id,
@@ -296,10 +295,10 @@ public static class Program
 
     private static async Task PrintDatabaseSummaryAsync(IUnitOfWork uow)
     {
-        Banner(ResourceStrings.DatabaseSummary.Header);
+        Banner(DatabaseSummary.Header);
 
         var projects = await uow.Projects.GetAllAsync().ConfigureAwait(false);
-        Banner(ResourceStrings.DatabaseSummary.Projects);
+        Banner(DatabaseSummary.Projects);
         foreach (var p in projects)
         {
             Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryProjectEntryFormat.ToString(), p.Id, p.Name));
@@ -388,6 +387,6 @@ public static class Program
     private static void Banner(string text)
     {
         Console.WriteLine();
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, BannerFormat.ToString(), text));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, text));
     }
 }
