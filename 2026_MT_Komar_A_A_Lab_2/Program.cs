@@ -15,34 +15,89 @@ namespace DesignTimeDbContextFactory;
 
 public static class Program
 {
-    private const string HostAlreadySeededFormat = Utilities.ResourceStrings.Host.AlreadySeeded;
-    private const string HostCreatedFormat = Utilities.ResourceStrings.Host.Created;
-    private const string PerformanceTestAlreadyExistsFormat = Utilities.ResourceStrings.PerformanceTest.AlreadyExists;
-    private const string PerformanceTestCreatedFormat = Utilities.ResourceStrings.PerformanceTest.Created;
-    private const string ProjectAlreadyExistsFormat = Utilities.ResourceStrings.Project.AlreadyExists;
-    private const string ProjectCreatedFormat = Utilities.ResourceStrings.Project.Created;
-    private const string PipelineStepInfoFormat = Utilities.ResourceStrings.PipelineStep.StepInfo;
-    private const string PipelineIssueLogsCommittedFormat = Utilities.ResourceStrings.PipelineStep.IssueLogsCommitted;
-    private const string PipelineReadBackInfoFormat = Utilities.ResourceStrings.PipelineStep.ReadBackInfo;
-    private const string PipelineLogEntryFormat = Utilities.ResourceStrings.PipelineStep.LogEntry;
-    private const string PipelineTransactionRolledBackFormat = Utilities.ResourceStrings.PipelineStep.TransactionRolledBack;
-    private const string ThreadSpeedMetricAlreadyRecordedFormat = Utilities.ResourceStrings.ThreadSpeedMetric.AlreadyRecorded;
-    private const string ThreadSpeedMetricSavedFormat = Utilities.ResourceStrings.ThreadSpeedMetric.MetricSaved;
-    private const string DatabaseSummaryProjectEntryFormat = Utilities.ResourceStrings.DatabaseSummary.ProjectEntry;
-    private const string DatabaseSummaryStepEntryFormat = Utilities.ResourceStrings.DatabaseSummary.StepEntry;
-    private const string DatabaseSummaryPipelineStepsFormat = Utilities.ResourceStrings.DatabaseSummary.PipelineSteps;
-    private const string DatabaseSummaryIssueLogsFormat = Utilities.ResourceStrings.DatabaseSummary.IssueLogs;
-    private const string DatabaseSummaryIssueEntryFormat = Utilities.ResourceStrings.DatabaseSummary.IssueEntry;
-    private const string DatabaseSummaryThreadSpeedMetricsFormat = Utilities.ResourceStrings.DatabaseSummary.ThreadSpeedMetrics;
-    private const string DatabaseSummaryMetricEntryFormat = Utilities.ResourceStrings.DatabaseSummary.MetricEntry;
-    private const string DatabaseSummaryStageTypesFormat = Utilities.ResourceStrings.DatabaseSummary.StageTypes;
-    private const string DatabaseSummaryStageTypeEntryFormat = Utilities.ResourceStrings.DatabaseSummary.StageTypeEntry;
-    private const string DatabaseSummaryCpuModelsFormat = Utilities.ResourceStrings.DatabaseSummary.CpuModels;
-    private const string DatabaseSummaryCpuModelEntryFormat = Utilities.ResourceStrings.DatabaseSummary.CpuModelEntry;
-    private const string DatabaseSummaryHostsFormat = Utilities.ResourceStrings.DatabaseSummary.Hosts;
-    private const string DatabaseSummaryHostEntryFormat = Utilities.ResourceStrings.DatabaseSummary.HostEntry;
-    private const string DatabaseSummaryPerformanceTestsFormat = Utilities.ResourceStrings.DatabaseSummary.PerformanceTests;
-    private const string DatabaseSummaryPerformanceTestEntryFormat = Utilities.ResourceStrings.DatabaseSummary.PerformanceTestEntry;
+    private static readonly CompositeFormat HostAlreadySeededFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.Host.AlreadySeeded);
+
+    private static readonly CompositeFormat HostCreatedFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.Host.Created);
+
+    private static readonly CompositeFormat PerformanceTestAlreadyExistsFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.PerformanceTest.AlreadyExists);
+
+    private static readonly CompositeFormat PerformanceTestCreatedFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.PerformanceTest.Created);
+
+    private static readonly CompositeFormat ProjectAlreadyExistsFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.Project.AlreadyExists);
+
+    private static readonly CompositeFormat ProjectCreatedFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.Project.Created);
+
+    private static readonly CompositeFormat PipelineStepInfoFmt =
+        CompositeFormat.Parse(PipelineStep.StepInfo);
+
+    private static readonly CompositeFormat PipelineIssueLogsCommittedFmt =
+        CompositeFormat.Parse(PipelineStep.IssueLogsCommitted);
+
+    private static readonly CompositeFormat PipelineReadBackInfoFmt =
+        CompositeFormat.Parse(PipelineStep.ReadBackInfo);
+
+    private static readonly CompositeFormat PipelineLogEntryFmt =
+        CompositeFormat.Parse(PipelineStep.LogEntry);
+
+    private static readonly CompositeFormat PipelineTransactionRolledBackFmt =
+        CompositeFormat.Parse(PipelineStep.TransactionRolledBack);
+
+    private static readonly CompositeFormat ThreadSpeedMetricAlreadyRecordedFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.ThreadSpeedMetric.AlreadyRecorded);
+
+    private static readonly CompositeFormat ThreadSpeedMetricSavedFmt =
+        CompositeFormat.Parse(Utilities.ResourceStrings.ThreadSpeedMetric.MetricSaved);
+
+    private static readonly CompositeFormat DbSummaryProjectEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.ProjectEntry);
+
+    private static readonly CompositeFormat DbSummaryStepEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.StepEntry);
+
+    private static readonly CompositeFormat DbSummaryPipelineStepsFmt =
+        CompositeFormat.Parse(DatabaseSummary.PipelineSteps);
+
+    private static readonly CompositeFormat DbSummaryIssueLogsFmt =
+        CompositeFormat.Parse(DatabaseSummary.IssueLogs);
+
+    private static readonly CompositeFormat DbSummaryIssueEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.IssueEntry);
+
+    private static readonly CompositeFormat DbSummaryThreadSpeedMetricsFmt =
+        CompositeFormat.Parse(DatabaseSummary.ThreadSpeedMetrics);
+
+    private static readonly CompositeFormat DbSummaryMetricEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.MetricEntry);
+
+    private static readonly CompositeFormat DbSummaryStageTypesFmt =
+        CompositeFormat.Parse(DatabaseSummary.StageTypes);
+
+    private static readonly CompositeFormat DbSummaryStageTypeEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.StageTypeEntry);
+
+    private static readonly CompositeFormat DbSummaryCpuModelsFmt =
+        CompositeFormat.Parse(DatabaseSummary.CpuModels);
+
+    private static readonly CompositeFormat DbSummaryCpuModelEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.CpuModelEntry);
+
+    private static readonly CompositeFormat DbSummaryHostsFmt =
+        CompositeFormat.Parse(DatabaseSummary.Hosts);
+
+    private static readonly CompositeFormat DbSummaryHostEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.HostEntry);
+
+    private static readonly CompositeFormat DbSummaryPerformanceTestsFmt =
+        CompositeFormat.Parse(DatabaseSummary.PerformanceTests);
+
+    private static readonly CompositeFormat DbSummaryPerformanceTestEntryFmt =
+        CompositeFormat.Parse(DatabaseSummary.PerformanceTestEntry);
 
     public static async Task Main()
     {
@@ -52,23 +107,35 @@ public static class Program
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IDataFactory, DefaultDataFactory>();
 
-        await using var serviceProvider = services.BuildServiceProvider();
-        await using var scope = serviceProvider.CreateAsyncScope();
+        var serviceProvider = services.BuildServiceProvider();
+        try
+        {
+            var scope = serviceProvider.CreateAsyncScope();
+            try
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                var factory = scope.ServiceProvider.GetRequiredService<IDataFactory>();
 
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        var factory = scope.ServiceProvider.GetRequiredService<IDataFactory>();
+                await dbContext.Database.MigrateAsync().ConfigureAwait(false);
+                Banner(Database.MigratedUpToDate);
 
-        await dbContext.Database.MigrateAsync().ConfigureAwait(false);
-
-        Banner(Database.MigratedUpToDate);
-
-        var host = await SeedHostAsync(unitOfWork, factory).ConfigureAwait(false);
-        await SeedPerformanceTestsAsync(unitOfWork, factory).ConfigureAwait(false);
-        var project = await SeedProjectAsync(unitOfWork).ConfigureAwait(false);
-        await DemonstratePipelineWorkflowAsync(unitOfWork, project).ConfigureAwait(false);
-        await DemonstrateThreadSpeedMetricsAsync(unitOfWork, host).ConfigureAwait(false);
-        await PrintDatabaseSummaryAsync(unitOfWork).ConfigureAwait(false);
+                var host = await SeedHostAsync(unitOfWork, factory).ConfigureAwait(false);
+                await SeedPerformanceTestsAsync(unitOfWork, factory).ConfigureAwait(false);
+                var project = await SeedProjectAsync(unitOfWork).ConfigureAwait(false);
+                await DemonstratePipelineWorkflowAsync(unitOfWork, project).ConfigureAwait(false);
+                await DemonstrateThreadSpeedMetricsAsync(unitOfWork, host).ConfigureAwait(false);
+                await PrintDatabaseSummaryAsync(unitOfWork).ConfigureAwait(false);
+            }
+            finally
+            {
+                await scope.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            await serviceProvider.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     private static async Task<Entities.Host> SeedHostAsync(IUnitOfWork uow, IDataFactory factory)
@@ -78,7 +145,7 @@ public static class Program
         {
             Console.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
-                HostAlreadySeededFormat.ToString(),
+                HostAlreadySeededFmt,
                 existing.Id,
                 existing.OperatingSystem,
                 existing.RamGb));
@@ -88,9 +155,10 @@ public static class Program
         var host = factory.CreateHost();
         await uow.Hosts.AddAsync(host).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
+
         Console.WriteLine(string.Format(
             CultureInfo.InvariantCulture,
-            HostCreatedFormat.ToString(),
+            HostCreatedFmt,
             host.Id,
             host.CpuModelId,
             host.RamGb,
@@ -102,15 +170,23 @@ public static class Program
     {
         foreach (var pt in factory.CreatePerformanceTests())
         {
-            var existing = await uow.PerformanceTests.GetByDescriptionAsync(pt.Description).ConfigureAwait(false);
+            var existing = await uow.PerformanceTests
+                .GetByDescriptionAsync(pt.Description).ConfigureAwait(false);
+
             if (existing is not null)
             {
-                Console.WriteLine(string.Format(CultureInfo.InvariantCulture, PerformanceTestAlreadyExistsFormat.ToString(), pt.Description));
+                Console.WriteLine(string.Format(
+                    CultureInfo.InvariantCulture,
+                    PerformanceTestAlreadyExistsFmt,
+                    pt.Description));
                 continue;
             }
 
             await uow.PerformanceTests.AddAsync(pt).ConfigureAwait(false);
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, PerformanceTestCreatedFormat.ToString(), pt.Description));
+            Console.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                PerformanceTestCreatedFmt,
+                pt.Description));
         }
 
         await uow.SaveChangesAsync().ConfigureAwait(false);
@@ -118,10 +194,16 @@ public static class Program
 
     private static async Task<Entities.Project> SeedProjectAsync(IUnitOfWork uow)
     {
-        var existing = await uow.Projects.GetByFolderPathAsync(Utilities.ResourceStrings.Project.DefaultFolderPath).ConfigureAwait(false);
+        var existing = await uow.Projects
+            .GetByFolderPathAsync(Utilities.ResourceStrings.Project.DefaultFolderPath).ConfigureAwait(false);
+
         if (existing is not null)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ProjectAlreadyExistsFormat.ToString(), existing.Id, existing.Name));
+            Console.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                ProjectAlreadyExistsFmt,
+                existing.Id,
+                existing.Name));
             return existing;
         }
 
@@ -132,18 +214,33 @@ public static class Program
         };
         await uow.Projects.AddAsync(project).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ProjectCreatedFormat.ToString(), project.Id, project.Name));
+
+        Console.WriteLine(string.Format(
+            CultureInfo.InvariantCulture,
+            ProjectCreatedFmt,
+            project.Id,
+            project.Name));
         return project;
     }
 
-    private static async Task DemonstratePipelineWorkflowAsync(IUnitOfWork uow, Entities.Project project)
+    private static async Task DemonstratePipelineWorkflowAsync(
+        IUnitOfWork uow, Entities.Project project)
     {
         Banner("Pipeline Workflow Demo");
 
         var buildStage = await uow.StageTypes.GetByIdAsync(1).ConfigureAwait(false);
         if (buildStage is null)
         {
-            Banner(Utilities.ResourceStrings.PipelineStep.StageNotFound);
+            Banner(PipelineStep.StageNotFound);
+            return;
+        }
+
+        var existingSteps = await uow.PipelineStepExecutions
+            .GetByProjectIdAsync(project.Id).ConfigureAwait(false);
+
+        if (existingSteps.Any(s => s.StageTypeId == buildStage.Id))
+        {
+            Banner(PipelineStep.BuildStepAlreadyExists);
             return;
         }
 
@@ -166,7 +263,7 @@ public static class Program
 
             Console.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
-                PipelineStepInfoFormat.ToString(),
+                PipelineStepInfoFmt,
                 step.Id,
                 buildStage.Name,
                 step.Status,
@@ -200,7 +297,10 @@ public static class Program
             await uow.SaveChangesAsync().ConfigureAwait(false);
             await uow.CommitTransactionAsync().ConfigureAwait(false);
 
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, PipelineIssueLogsCommittedFormat.ToString(), logs.Length));
+            Console.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                PipelineIssueLogsCommittedFmt,
+                logs.Length));
 
             var stepWithLogs = await uow.PipelineStepExecutions
                 .GetWithLogsAsync(step.Id).ConfigureAwait(false);
@@ -209,14 +309,15 @@ public static class Program
             {
                 Console.WriteLine(string.Format(
                     CultureInfo.InvariantCulture,
-                    PipelineReadBackInfoFormat.ToString(),
+                    PipelineReadBackInfoFmt,
                     stepWithLogs.Id,
                     stepWithLogs.IssueLogs.Count));
+
                 foreach (var log in stepWithLogs.IssueLogs)
                 {
                     Console.WriteLine(string.Format(
                         CultureInfo.InvariantCulture,
-                        PipelineLogEntryFormat.ToString(),
+                        PipelineLogEntryFmt,
                         log.Severity,
                         log.Code,
                         log.Message));
@@ -228,13 +329,14 @@ public static class Program
             await uow.RollbackTransactionAsync().ConfigureAwait(false);
             Console.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
-                PipelineTransactionRolledBackFormat.ToString(),
+                PipelineTransactionRolledBackFmt,
                 ex.Message));
             throw;
         }
     }
 
-    private static async Task DemonstrateThreadSpeedMetricsAsync(IUnitOfWork uow, Entities.Host host)
+    private static async Task DemonstrateThreadSpeedMetricsAsync(
+        IUnitOfWork uow, Entities.Host host)
     {
         Banner(Utilities.ResourceStrings.ThreadSpeedMetric.DemoTitle);
 
@@ -254,19 +356,21 @@ public static class Program
             return;
         }
 
-        var existing = await uow.ThreadSpeedMetrics
-            .FindAsync(m => m.HostId == host.Id && m.PerformanceTestId == perfTest.Id)
-            .ConfigureAwait(false);
+        var hostMetrics = await uow.ThreadSpeedMetrics
+            .GetByHostIdAsync(host.Id).ConfigureAwait(false);
 
-        if (existing.Any())
+        if (hostMetrics.Any(m => m.PerformanceTestId == perfTest.Id))
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ThreadSpeedMetricAlreadyRecordedFormat.ToString(), perfTest.Description));
+            Console.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                ThreadSpeedMetricAlreadyRecordedFmt,
+                perfTest.Description));
             return;
         }
 
-        long seqMs = 8_240;
-        long parMs = 1_340;
-        decimal efficiency = Math.Round((decimal)seqMs / parMs, 4);
+        const long seqMs = 8_240;
+        const long parMs = 1_340;
+        var efficiency = Math.Round((decimal)seqMs / parMs, 4);
 
         var metric = new Entities.ThreadSpeedMetric
         {
@@ -285,7 +389,7 @@ public static class Program
 
         Console.WriteLine(string.Format(
             CultureInfo.InvariantCulture,
-            ThreadSpeedMetricSavedFormat.ToString(),
+            ThreadSpeedMetricSavedFmt,
             perfTest.Description,
             seqMs,
             parMs,
@@ -301,92 +405,62 @@ public static class Program
         Banner(DatabaseSummary.Projects);
         foreach (var p in projects)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryProjectEntryFormat.ToString(), p.Id, p.Name));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryProjectEntryFmt, p.Id, p.Name));
         }
 
         var steps = await uow.PipelineStepExecutions.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryPipelineStepsFormat.ToString(), steps.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryPipelineStepsFmt, steps.Count()));
         foreach (var s in steps)
         {
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                DatabaseSummaryStepEntryFormat.ToString(),
-                s.Id,
-                s.Status,
-                s.TotalErrors,
-                s.TotalWarnings,
-                s.DurationMs));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryStepEntryFmt, s.Id, s.Status, s.TotalErrors, s.TotalWarnings, s.DurationMs));
         }
 
         var issueLogs = await uow.IssueLogs.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryIssueLogsFormat.ToString(), issueLogs.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueLogsFmt, issueLogs.Count()));
         foreach (var il in issueLogs)
         {
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                DatabaseSummaryIssueEntryFormat.ToString(),
-                il.Severity,
-                il.Code,
-                il.Message));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueEntryFmt, il.Severity, il.Code, il.Message));
         }
 
         var metrics = await uow.ThreadSpeedMetrics.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryThreadSpeedMetricsFormat.ToString(), metrics.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryThreadSpeedMetricsFmt, metrics.Count()));
         foreach (var m in metrics)
         {
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                DatabaseSummaryMetricEntryFormat.ToString(),
-                m.Id,
-                m.SequentialTimeMs,
-                m.ParallelTimeMs,
-                m.EfficiencyCoefficient));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryMetricEntryFmt, m.Id, m.SequentialTimeMs, m.ParallelTimeMs, m.EfficiencyCoefficient));
         }
 
         var stageTypes = await uow.StageTypes.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryStageTypesFormat.ToString(), stageTypes.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryStageTypesFmt, stageTypes.Count()));
         foreach (var st in stageTypes)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryStageTypeEntryFormat.ToString(), st.Id, st.Name));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryStageTypeEntryFmt, st.Id, st.Name));
         }
 
         var cpuModels = await uow.CpuModels.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryCpuModelsFormat.ToString(), cpuModels.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryCpuModelsFmt, cpuModels.Count()));
         foreach (var c in cpuModels)
         {
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                DatabaseSummaryCpuModelEntryFormat.ToString(),
-                c.Id,
-                c.ModelName,
-                c.PhysicalCoreCount,
-                c.LogicalThreadCount));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryCpuModelEntryFmt, c.Id, c.ModelName, c.PhysicalCoreCount, c.LogicalThreadCount));
         }
 
         var hosts = await uow.Hosts.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryHostsFormat.ToString(), hosts.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryHostsFmt, hosts.Count()));
         foreach (var h in hosts)
         {
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                DatabaseSummaryHostEntryFormat.ToString(),
-                h.Id,
-                h.CpuModelId,
-                h.RamGb,
-                h.OperatingSystem));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryHostEntryFmt, h.Id, h.CpuModelId, h.RamGb, h.OperatingSystem));
         }
 
         var perfTests = await uow.PerformanceTests.GetAllAsync().ConfigureAwait(false);
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryPerformanceTestsFormat.ToString(), perfTests.Count()));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryPerformanceTestsFmt, perfTests.Count()));
         foreach (var pt in perfTests)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DatabaseSummaryPerformanceTestEntryFormat.ToString(), pt.Id, pt.Description));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryPerformanceTestEntryFmt, pt.Id, pt.Description));
         }
     }
 
     private static void Banner(string text)
     {
         Console.WriteLine();
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, text));
+        Console.WriteLine(text);
     }
 }
