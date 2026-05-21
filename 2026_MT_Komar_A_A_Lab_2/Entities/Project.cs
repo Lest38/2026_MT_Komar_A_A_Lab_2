@@ -5,11 +5,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 [Table("Projects")]
-public class Project
+public class Project : BaseEntity<int>
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public int ProjectId { get; set; }
+
+    public override int Id => this.ProjectId;
 
     [Required]
     [MaxLength(200)]
@@ -19,6 +21,8 @@ public class Project
     [MaxLength(500)]
     public string FolderPath { get; set; } = string.Empty;
 
-    public virtual ICollection<PipelineStepExecution> PipelineStepExecutions { get; } =
-        [];
+    public virtual ICollection<PipelineStepExecution> PipelineStepExecutions { get; } = [];
+
+    public override string ToLogString(string val = "")
+        => base.ToLogString($"{Name} @ {FolderPath} {val}".TrimEnd());
 }

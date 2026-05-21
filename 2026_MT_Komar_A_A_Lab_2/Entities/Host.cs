@@ -1,16 +1,17 @@
 ﻿namespace Entities;
 
-using Factories;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 [Table("Hosts")]
-public class Host
+public class Host : BaseEntity<int>
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public int HostId { get; set; }
+
+    public override int Id => this.HostId;
 
     [Required]
     public int CpuModelId { get; set; }
@@ -24,8 +25,10 @@ public class Host
     public string OperatingSystem { get; set; } = string.Empty;
 
     [ForeignKey(nameof(CpuModelId))]
-    public virtual CpuModel CpuModel { get; set; }
+    public virtual CpuModel CpuModel { get; set; } = null!;
 
-    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } =
-        [];
+    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } = [];
+
+    public override string ToLogString(string val = "")
+        => base.ToLogString($"{OperatingSystem} RAM={RamGb}GB {val}".TrimEnd());
 }

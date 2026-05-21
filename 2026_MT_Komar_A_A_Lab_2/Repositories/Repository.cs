@@ -1,6 +1,7 @@
 ﻿namespace Repositories;
 
 using Data;
+using Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 public class Repository<T> : IRepository<T>
-    where T : class
+    where T : BaseEntity<int>
 {
     private readonly DbSet<T> dbSet;
 
@@ -35,21 +36,18 @@ public class Repository<T> : IRepository<T>
     public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
-
         return await this.dbSet.Where(predicate).ToListAsync().ConfigureAwait(false);
     }
 
     public async Task AddAsync(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-
         await this.dbSet.AddAsync(entity).ConfigureAwait(false);
     }
 
     public Task UpdateAsync(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-
         this.dbSet.Update(entity);
         return Task.CompletedTask;
     }
@@ -57,7 +55,6 @@ public class Repository<T> : IRepository<T>
     public Task DeleteAsync(T entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
-
         this.dbSet.Remove(entity);
         return Task.CompletedTask;
     }
@@ -65,7 +62,6 @@ public class Repository<T> : IRepository<T>
     public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
     {
         ArgumentNullException.ThrowIfNull(predicate);
-
         return await this.dbSet.AnyAsync(predicate).ConfigureAwait(false);
     }
 }

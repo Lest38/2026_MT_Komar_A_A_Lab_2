@@ -4,13 +4,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-#nullable enable
 [Table("IssueLogs")]
-public class IssueLog
+public class IssueLog : BaseEntity<int>
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public int IssueLogId { get; set; }
+
+    public override int Id => this.IssueLogId;
 
     [Required]
     public int PipelineStepExecutionId { get; set; }
@@ -29,6 +30,8 @@ public class IssueLog
     public string Message { get; set; } = string.Empty;
 
     [ForeignKey(nameof(PipelineStepExecutionId))]
-    public virtual PipelineStepExecution? PipelineStepExecution { get; set; }
+    public virtual PipelineStepExecution PipelineStepExecution { get; set; } = null!;
+
+    public override string ToLogString(string val = "")
+        => base.ToLogString($"[{Severity}] {Code}: {Message} {val}".TrimEnd());
 }
-#nullable restore

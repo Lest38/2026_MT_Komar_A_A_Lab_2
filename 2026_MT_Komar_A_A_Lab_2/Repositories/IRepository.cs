@@ -1,5 +1,7 @@
-﻿namespace Repositories;
+﻿// Repositories/IRepository.cs
+namespace Repositories;
 
+using Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 
 #nullable enable
 public interface IRepository<T>
-    where T : class
+    where T : BaseEntity<int>
 {
     Task<T?> GetByIdAsync(int id);
 

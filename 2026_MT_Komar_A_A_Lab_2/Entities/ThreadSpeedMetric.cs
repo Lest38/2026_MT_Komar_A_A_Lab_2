@@ -4,13 +4,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-#nullable enable
 [Table("ThreadSpeedMetrics")]
-public class ThreadSpeedMetric
+public class ThreadSpeedMetric : BaseEntity<int>
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public int ThreadSpeedMetricId { get; set; }
+
+    public override int Id => this.ThreadSpeedMetricId;
 
     [Required]
     public int PerformanceTestId { get; set; }
@@ -38,12 +39,14 @@ public class ThreadSpeedMetric
     public long DurationMs { get; set; }
 
     [ForeignKey(nameof(PerformanceTestId))]
-    public virtual PerformanceTest? PerformanceTest { get; set; }
+    public virtual PerformanceTest PerformanceTest { get; set; } = null!;
 
     [ForeignKey(nameof(HostId))]
-    public virtual Host? Host { get; set; }
+    public virtual Host Host { get; set; } = null!;
 
     [ForeignKey(nameof(PipelineStepExecutionId))]
-    public virtual PipelineStepExecution? PipelineStepExecution { get; set; }
+    public virtual PipelineStepExecution PipelineStepExecution { get; set; } = null!;
+
+    public override string ToLogString(string val = "")
+        => base.ToLogString($"Seq={SequentialTimeMs}ms Par={ParallelTimeMs}ms Eff={EfficiencyCoefficient:F4}x {val}".TrimEnd());
 }
-#nullable restore
