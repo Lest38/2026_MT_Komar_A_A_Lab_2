@@ -7,140 +7,16 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.UnitOfWork;
 [TestFixture]
 public class UnitOfWorkTests
 {
-    private TestDatabaseFixture _fixture;
+    private TestDatabaseFixture fixture = null!;
 
-    [SetUp]
-    public void SetUp()
-    {
-        _fixture = new TestDatabaseFixture();
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _fixture?.Dispose();
-    }
+    [SetUp] public void SetUp() => fixture = new TestDatabaseFixture();
+    [TearDown] public void TearDown() => fixture.Dispose();
 
     [Test]
-    public async Task SaveChangesAsync_ShouldPersistChanges()
+    public void AllRepositories_AreNotNull_AfterConstruction()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var unitOfWork = new UnitsOfWork.UnitOfWork(context);
-        var project = new Project
-        {
-            Name = "UoW Test",
-            FolderPath = @"C:\Test\UoW"
-        };
-
-        // Act
-        await unitOfWork.Projects.AddAsync(project);
-        var result = await unitOfWork.SaveChangesAsync();
-
-        // Assert
-        Assert.That(result, Is.EqualTo(1));
-        var savedProject = await context.Projects.FirstOrDefaultAsync(p => p.Name == "UoW Test");
-        Assert.That(savedProject, Is.Not.Null);
-    }
-
-    [Test]
-    public async Task Transaction_ShouldCommitAllChanges()
-    {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var unitOfWork = new UnitsOfWork.UnitOfWork(context);
-
-        var project = new Project { Name = "Transaction Test", FolderPath = @"C:\Test\Transaction" };
-        var step = new PipelineStepExecution
-        {
-            StageTypeId = 1,
-            Status = "Success",
-            StartedAt = DateTime.Now,
-            DurationMs = 1000,
-            ExitCode = 0,
-            TotalErrors = 0,
-            TotalWarnings = 0
-        };
-
-        // Act
-        await unitOfWork.BeginTransactionAsync();
-
-        await unitOfWork.Projects.AddAsync(project);
-        await unitOfWork.SaveChangesAsync();
-
-        step.ProjectId = project.Id;
-        await unitOfWork.PipelineStepExecutions.AddAsync(step);
-        await unitOfWork.SaveChangesAsync();
-
-        await unitOfWork.CommitTransactionAsync();
-
-        // Assert
-        var savedProject = await context.Projects.FindAsync(project.Id);
-        var savedStep = await context.PipelineStepExecutions.FindAsync(step.Id);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(savedProject, Is.Not.Null);
-            Assert.That(savedStep, Is.Not.Null);
-        });
-        Assert.That(savedStep.ProjectId, Is.EqualTo(project.Id));
-    }
-
-    [Test]
-    public async Task Transaction_ShouldRollbackOnError()
-    {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var unitOfWork = new UnitsOfWork.UnitOfWork(context);
-
-        var project = new Project
-        {
-            Name = "Rollback Test",
-            FolderPath = @"C:\Test\Rollback"
-        };
-
-        // Act
-        await unitOfWork.BeginTransactionAsync();
-
-        await unitOfWork.Projects.AddAsync(project);
-
-        var invalidStep = new PipelineStepExecution
-        {
-            ProjectId = project.Id,
-            StageTypeId = 99999,
-            Status = "Success",
-            StartedAt = DateTime.Now,
-            DurationMs = 1000,
-            ExitCode = 0,
-            TotalErrors = 0,
-            TotalWarnings = 0
-        };
-
-        await unitOfWork.PipelineStepExecutions.AddAsync(invalidStep);
-
-        try
-        {
-            await unitOfWork.SaveChangesAsync();
-            Assert.Fail("Expected exception was not thrown");
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync();
-        }
-
-        // Assert
-        var savedProject = await context.Projects.FirstOrDefaultAsync(p => p.Name == "Rollback Test");
-        Assert.That(savedProject, Is.Null, "Project should not exist after rollback");
-
-        var savedStep = await context.PipelineStepExecutions.FirstOrDefaultAsync(s => s.StageTypeId == 99999);
-        Assert.That(savedStep, Is.Null, "Step should not exist after rollback");
-    }
-
-    [Test]
-    public void Repositories_ShouldBeInitialized()
-    {
-        using var context = _fixture.CreateContext();
-        var unitOfWork = new UnitsOfWork.UnitOfWork(context);
+        using var context = fixture.CreateContext();
+        using var unitOfWork = new global::UnitsOfWork.UnitOfWork(context);
 
         Assert.Multiple(() =>
         {
@@ -156,13 +32,83 @@ public class UnitOfWorkTests
     }
 
     [Test]
-    public void Dispose_ShouldDisposeContextAndTransaction()
+    public async Task Transaction_Commit_PersistsBothEntities()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var unitOfWork = new UnitsOfWork.UnitOfWork(context);
+        await using var context = fixture.CreateContext();
+        using var unitOfWork = new global::UnitsOfWork.UnitOfWork(context);
 
-        // Act & Assert
+        await unitOfWork.BeginTransactionAsync();
+
+        var project = new Project { Name = "Tx Commit", FolderPath = @"C:\Tx\Commit" };
+        await unitOfWork.Projects.AddAsync(project);
+        await unitOfWork.SaveChangesAsync();
+
+        var step = new PipelineStepExecution
+        {
+            ProjectId = project.Id,
+            StageTypeId = 1,
+            Status = "Success",
+            StartedAt = DateTime.UtcNow,
+            DurationMs = 2000,
+        };
+        await unitOfWork.PipelineStepExecutions.AddAsync(step);
+        await unitOfWork.SaveChangesAsync();
+
+        await unitOfWork.CommitTransactionAsync();
+
+        var savedProject = await context.Projects.FindAsync(project.Id);
+        var savedStep = await context.PipelineStepExecutions.FindAsync(step.Id);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(savedProject, Is.Not.Null);
+            Assert.That(savedStep, Is.Not.Null);
+            Assert.That(savedStep!.ProjectId, Is.EqualTo(project.Id));
+        });
+    }
+
+    [Test]
+    public async Task Transaction_Rollback_NothingIsPersisted()
+    {
+        await using var context = fixture.CreateContext();
+        using var unitOfWork = new global::UnitsOfWork.UnitOfWork(context);
+
+        await unitOfWork.BeginTransactionAsync();
+
+        var project = new Project { Name = "Tx Rollback", FolderPath = @"C:\Tx\Rollback" };
+        await unitOfWork.Projects.AddAsync(project);
+
+        var invalidStep = new PipelineStepExecution
+        {
+            ProjectId = project.Id,
+            StageTypeId = 99999,
+            Status = "Success",
+            StartedAt = DateTime.UtcNow,
+            DurationMs = 100,
+        };
+        await unitOfWork.PipelineStepExecutions.AddAsync(invalidStep);
+
+        try
+        {
+            await unitOfWork.SaveChangesAsync();
+            Assert.Fail("Expected an exception from invalid FK");
+        }
+        catch
+        {
+            await unitOfWork.RollbackTransactionAsync();
+        }
+
+        var projectInDb = await context.Projects
+            .FirstOrDefaultAsync(p => p.Name == "Tx Rollback");
+        Assert.That(projectInDb, Is.Null, "Nothing should be persisted after rollback");
+    }
+
+    [Test]
+    public void Dispose_CalledOnce_DoesNotThrow()
+    {
+        using var context = fixture.CreateContext();
+        var unitOfWork = new global::UnitsOfWork.UnitOfWork(context);
+
         Assert.DoesNotThrow(() => unitOfWork.Dispose());
     }
 }

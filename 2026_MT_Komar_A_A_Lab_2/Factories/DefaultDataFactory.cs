@@ -6,7 +6,8 @@ using System.Collections.Generic;
 public class DefaultDataFactory : IDataFactory
 {
     public Host CreateHost() =>
-        new()
+        new
+        ()
         {
             CpuModelId = 1,
             RamGb = 32.00m,

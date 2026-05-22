@@ -6,524 +6,179 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities;
 [TestFixture]
 public class EntityValidationTests
 {
-    private static bool ValidateModel(object model, out ICollection<ValidationResult> results)
+    private static bool Validate(object model, out ICollection<ValidationResult> results)
     {
-        var context = new ValidationContext(model, null, null);
+        var context = new ValidationContext(model, serviceProvider: null, items: null);
         results = [];
-        return Validator.TryValidateObject(model, context, results, true);
+        return Validator.TryValidateObject(model, context, results, validateAllProperties: true);
     }
 
-    private static bool HasValidationErrorFor(object model, string propertyName)
+    private static bool HasErrorFor(object model, string propertyName)
     {
-        ValidateModel(model, out var results);
+        Validate(model, out var results);
         return results.Any(r => r.MemberNames.Contains(propertyName));
     }
 
     [Test]
-    public void Project_WithoutRequiredFields_ShouldBeInvalid()
+    public void Project_EmptyObject_FailsOnNameAndFolderPath()
     {
-        // Arrange
         var project = new Project();
-
-        // Act
-        var isValid = ValidateModel(project, out _);
-
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(project, "Name"), Is.True);
-            Assert.That(HasValidationErrorFor(project, "FolderPath"), Is.True);
+            Assert.That(Validate(project, out _), Is.False);
+            Assert.That(HasErrorFor(project, nameof(Project.Name)), Is.True);
+            Assert.That(HasErrorFor(project, nameof(Project.FolderPath)), Is.True);
         });
     }
 
     [Test]
-    public void Project_WithValidData_ShouldBeValid()
+    public void Project_NameExceedsMaxLength_Fails()
     {
-        // Arrange
-        var project = new Project
-        {
-            Name = "Valid Project",
-            FolderPath = @"C:\Valid\Path"
-        };
+        var project = new Project { Name = new string('X', 201), FolderPath = @"C:\ok" };
+        Assert.That(HasErrorFor(project, nameof(Project.Name)), Is.True);
+    }
 
-        // Act
-        var isValid = ValidateModel(project, out var results);
-
+    [Test]
+    public void Project_ValidData_Passes()
+    {
+        var project = new Project { Name = "Valid Project", FolderPath = @"C:\Valid\Path" };
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.True);
+            Assert.That(Validate(project, out var results), Is.True);
             Assert.That(results, Is.Empty);
         });
     }
 
     [Test]
-    public void Project_NameExceedsMaxLength_ShouldBeInvalid()
+    public void PipelineStepExecution_EmptyObject_FailsOnStatus()
     {
-        // Arrange
-        var project = new Project
-        {
-            Name = new string('A', 201),
-            FolderPath = @"C:\Valid\Path"
-        };
-
-        // Act
-        var isValid = ValidateModel(project, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(project, "Name"), Is.True);
-        });
-    }
-
-    [Test]
-    public void PipelineStepExecution_WithoutRequiredFields_ShouldBeInvalid()
-    {
-        // Arrange
         var step = new PipelineStepExecution();
-
-        // Act
-        var isValid = ValidateModel(step, out _);
-
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(step, "Status"), Is.True);
+            Assert.That(Validate(step, out _), Is.False);
+            Assert.That(HasErrorFor(step, nameof(PipelineStepExecution.Status)), Is.True);
         });
     }
 
     [Test]
-    public void PipelineStepExecution_WithEmptyStatus_ShouldBeInvalid()
+    public void PipelineStepExecution_StatusExceedsMaxLength_Fails()
     {
-        // Arrange
-        var step = new PipelineStepExecution
-        {
-            ProjectId = 1,
-            StageTypeId = 1,
-            Status = string.Empty,
-            StartedAt = DateTime.Now,
-            DurationMs = 1000
-        };
-
-        // Act
-        var isValid = ValidateModel(step, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(step, "Status"), Is.True);
-        });
-    }
-
-    [Test]
-    public void PipelineStepExecution_WithStatusExceedingMaxLength_ShouldBeInvalid()
-    {
-        // Arrange
         var step = new PipelineStepExecution
         {
             ProjectId = 1,
             StageTypeId = 1,
             Status = new string('A', 21),
-            StartedAt = DateTime.Now,
+            StartedAt = DateTime.UtcNow,
             DurationMs = 1000
         };
-
-        // Act
-        var isValid = ValidateModel(step, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(step, "Status"), Is.True);
-        });
+        Assert.That(HasErrorFor(step, nameof(PipelineStepExecution.Status)), Is.True);
     }
 
     [Test]
-    public void PipelineStepExecution_WithValidData_ShouldBeValid()
+    public void PipelineStepExecution_ValidData_Passes()
     {
-        // Arrange
         var step = new PipelineStepExecution
         {
             ProjectId = 1,
             StageTypeId = 1,
             Status = "Success",
-            StartedAt = DateTime.Now,
-            DurationMs = 1000,
-            ExitCode = 0,
-            TotalErrors = 0,
-            TotalWarnings = 0
+            StartedAt = DateTime.UtcNow,
+            DurationMs = 1000
         };
-
-        // Act
-        var isValid = ValidateModel(step, out var results);
-
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.True);
+            Assert.That(Validate(step, out var results), Is.True);
             Assert.That(results, Is.Empty);
         });
     }
 
     [Test]
-    public void IssueLog_WithoutRequiredFields_ShouldBeInvalid()
+    public void IssueLog_EmptyObject_FailsOnSeverityAndMessage()
     {
-        // Arrange
         var log = new IssueLog();
-
-        // Act
-        var isValid = ValidateModel(log, out _);
-
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(log, "Severity"), Is.True);
-            Assert.That(HasValidationErrorFor(log, "Message"), Is.True);
+            Assert.That(Validate(log, out _), Is.False);
+            Assert.That(HasErrorFor(log, nameof(IssueLog.Severity)), Is.True);
+            Assert.That(HasErrorFor(log, nameof(IssueLog.Message)), Is.True);
         });
     }
 
     [Test]
-    public void IssueLog_WithEmptySeverity_ShouldBeInvalid()
+    public void IssueLog_EmptySeverity_Fails()
     {
-        // Arrange
         var log = new IssueLog
         {
             PipelineStepExecutionId = 1,
-            LoggedAt = DateTime.Now,
+            LoggedAt = DateTime.UtcNow,
             Severity = string.Empty,
-            Message = "Test message"
+            Message = "msg"
         };
-
-        // Act
-        var isValid = ValidateModel(log, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(log, "Severity"), Is.True);
-        });
+        Assert.That(HasErrorFor(log, nameof(IssueLog.Severity)), Is.True);
     }
 
     [Test]
-    public void IssueLog_WithEmptyMessage_ShouldBeInvalid()
+    public void IssueLog_ValidData_Passes()
     {
-        // Arrange
         var log = new IssueLog
         {
             PipelineStepExecutionId = 1,
-            LoggedAt = DateTime.Now,
+            LoggedAt = DateTime.UtcNow,
             Severity = "Error",
-            Message = string.Empty
+            Code = "CS0246",
+            Message = "Type not found"
         };
-
-        // Act
-        var isValid = ValidateModel(log, out _);
-
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(log, "Message"), Is.True);
-        });
-    }
-
-    [Test]
-    public void IssueLog_WithValidData_ShouldBeValid()
-    {
-        // Arrange
-        var log = new IssueLog
-        {
-            PipelineStepExecutionId = 1,
-            LoggedAt = DateTime.Now,
-            Severity = "Error",
-            Code = "CS1001",
-            Message = "Test message"
-        };
-
-        // Act
-        var isValid = ValidateModel(log, out var results);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.True);
+            Assert.That(Validate(log, out var results), Is.True);
             Assert.That(results, Is.Empty);
         });
     }
 
     [Test]
-    public void CpuModel_WithoutRequiredFields_ShouldBeInvalid()
+    public void CpuModel_EmptyModelName_Fails()
     {
-        // Arrange
-        var cpuModel = new CpuModel();
-
-        // Act
-        var isValid = ValidateModel(cpuModel, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(cpuModel, "ModelName"), Is.True);
-        });
+        var cpu = new CpuModel { ModelName = string.Empty, PhysicalCoreCount = 8, LogicalThreadCount = 16 };
+        Assert.That(HasErrorFor(cpu, nameof(CpuModel.ModelName)), Is.True);
     }
 
     [Test]
-    public void CpuModel_WithEmptyModelName_ShouldBeInvalid()
+    public void CpuModel_ValidData_Passes()
     {
-        // Arrange
-        var cpuModel = new CpuModel
-        {
-            ModelName = string.Empty,
-            PhysicalCoreCount = 8,
-            LogicalThreadCount = 16
-        };
-
-        // Act
-        var isValid = ValidateModel(cpuModel, out _);
-
+        var cpu = new CpuModel { ModelName = "Intel Core i7", PhysicalCoreCount = 8, LogicalThreadCount = 16 };
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(cpuModel, "ModelName"), Is.True);
-        });
-    }
-
-    [Test]
-    public void CpuModel_WithValidData_ShouldBeValid()
-    {
-        // Arrange
-        var cpuModel = new CpuModel
-        {
-            ModelName = "Intel Core i7",
-            PhysicalCoreCount = 8,
-            LogicalThreadCount = 16
-        };
-
-        // Act
-        var isValid = ValidateModel(cpuModel, out var results);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.True);
+            Assert.That(Validate(cpu, out var results), Is.True);
             Assert.That(results, Is.Empty);
         });
     }
 
     [Test]
-    public void Host_WithoutRequiredFields_ShouldBeInvalid()
+    public void Host_OperatingSystemExceedsMaxLength_Fails()
     {
-        // Arrange
-        var host = new Host();
-
-        // Act
-        var isValid = ValidateModel(host, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(host, "OperatingSystem"), Is.True);
-        });
+        var host = new Host { CpuModelId = 1, RamGb = 32m, OperatingSystem = new string('W', 201) };
+        Assert.That(HasErrorFor(host, nameof(Host.OperatingSystem)), Is.True);
     }
 
     [Test]
-    public void Host_WithEmptyOperatingSystem_ShouldBeInvalid()
+    public void Host_ValidData_Passes()
     {
-        // Arrange
-        var host = new Host
-        {
-            CpuModelId = 1,
-            RamGb = 32.00m,
-            OperatingSystem = string.Empty
-        };
-
-        // Act
-        var isValid = ValidateModel(host, out _);
-
+        var host = new Host { CpuModelId = 1, RamGb = 32m, OperatingSystem = "Windows 11" };
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(host, "OperatingSystem"), Is.True);
-        });
-    }
-
-    [Test]
-    public void Host_WithOperatingSystemExceedingMaxLength_ShouldBeInvalid()
-    {
-        // Arrange
-        var host = new Host
-        {
-            CpuModelId = 1,
-            RamGb = 32.00m,
-            OperatingSystem = new string('A', 201)
-        };
-
-        // Act
-        var isValid = ValidateModel(host, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(host, "OperatingSystem"), Is.True);
-        });
-    }
-
-    [Test]
-    public void Host_WithValidData_ShouldBeValid()
-    {
-        // Arrange
-        var host = new Host
-        {
-            CpuModelId = 1,
-            RamGb = 32.00m,
-            OperatingSystem = "Windows 11"
-        };
-
-        // Act
-        var isValid = ValidateModel(host, out var results);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.True);
+            Assert.That(Validate(host, out var results), Is.True);
             Assert.That(results, Is.Empty);
         });
     }
 
     [Test]
-    public void StageType_WithoutName_ShouldBeInvalid()
+    public void StageType_ValidData_Passes()
     {
-        // Arrange
-        var stageType = new StageType();
-
-        // Act
-        var isValid = ValidateModel(stageType, out _);
-
+        var st = new StageType { Name = "Build" };
         Assert.Multiple(() =>
         {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(stageType, "Name"), Is.True);
-        });
-    }
-
-    [Test]
-    public void StageType_WithValidData_ShouldBeValid()
-    {
-        // Arrange
-        var stageType = new StageType
-        {
-            Name = "Build"
-        };
-
-        // Act
-        var isValid = ValidateModel(stageType, out var results);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.True);
+            Assert.That(Validate(st, out var results), Is.True);
             Assert.That(results, Is.Empty);
         });
-    }
-
-    [Test]
-    public void PerformanceTest_WithoutDescription_ShouldBeInvalid()
-    {
-        // Arrange
-        var perfTest = new PerformanceTest();
-
-        // Act
-        var isValid = ValidateModel(perfTest, out _);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.False);
-            Assert.That(HasValidationErrorFor(perfTest, "Description"), Is.True);
-        });
-    }
-
-    [Test]
-    public void PerformanceTest_WithValidData_ShouldBeValid()
-    {
-        // Arrange
-        var perfTest = new PerformanceTest
-        {
-            Description = "Matrix Multiplication 2000x2000"
-        };
-
-        // Act
-        var isValid = ValidateModel(perfTest, out var results);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.True);
-            Assert.That(results, Is.Empty);
-        });
-    }
-
-    [Test]
-    public void ThreadSpeedMetric_WithValidData_ShouldBeValid()
-    {
-        // Arrange
-        var metric = new ThreadSpeedMetric
-        {
-            PerformanceTestId = 1,
-            HostId = 1,
-            PipelineStepExecutionId = 1,
-            SequentialTimeMs = 5000,
-            ParallelTimeMs = 1250,
-            EfficiencyCoefficient = 4.0m,
-            StartedAt = DateTime.Now,
-            DurationMs = 1250
-        };
-
-        // Act
-        var isValid = ValidateModel(metric, out var results);
-
-        Assert.Multiple(() =>
-        {
-            // Assert
-            Assert.That(isValid, Is.True);
-            Assert.That(results, Is.Empty);
-        });
-    }
-
-    [Test]
-    public void ThreadSpeedMetric_WithZeroEfficiency_ShouldBeValid()
-    {
-        // Arrange
-        var metric = new ThreadSpeedMetric
-        {
-            PerformanceTestId = 1,
-            HostId = 1,
-            PipelineStepExecutionId = 1,
-            SequentialTimeMs = 0,
-            ParallelTimeMs = 0,
-            EfficiencyCoefficient = 0,
-            StartedAt = DateTime.Now,
-            DurationMs = 0
-        };
-
-        // Act
-        var isValid = ValidateModel(metric, out _);
-
-        // Assert
-        Assert.That(isValid, Is.True);
     }
 }

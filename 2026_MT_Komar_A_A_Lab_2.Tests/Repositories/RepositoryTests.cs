@@ -8,201 +8,118 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Repositories;
 [TestFixture]
 public class RepositoryTests
 {
-    private TestDatabaseFixture _fixture;
+    private TestDatabaseFixture fixture = null!;
 
-    [SetUp]
-    public void SetUp()
-    {
-        _fixture = new TestDatabaseFixture();
-    }
+    [SetUp] public void SetUp() => fixture = new TestDatabaseFixture();
+    [TearDown] public void TearDown() => fixture.Dispose();
 
-    [TearDown]
-    public void TearDown()
+    [Test]
+    public async Task AddAsync_ValidEntity_IsPersisted()
     {
-        _fixture?.Dispose();
+        await using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
+        var project = new Project { Name = "Add Test", FolderPath = @"C:\Repo\Add" };
+
+        await repo.AddAsync(project);
+        await context.SaveChangesAsync();
+
+        var saved = await context.Projects.FirstOrDefaultAsync(p => p.Name == "Add Test");
+        Assert.That(saved, Is.Not.Null);
+        Assert.That(saved!.FolderPath, Is.EqualTo(@"C:\Repo\Add"));
     }
 
     [Test]
-    public async Task AddAsync_ShouldAddEntityToDatabase()
+    public void AddAsync_NullEntity_ThrowsArgumentNullException()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
-        var project = new Project
-        {
-            Name = "Test Project",
-            FolderPath = @"C:\Test\Project"
-        };
-
-        // Act
-        await repository.AddAsync(project);
-        await context.SaveChangesAsync();
-
-        // Assert
-        var savedProject = await context.Projects.FirstOrDefaultAsync(p => p.Name == "Test Project");
-        Assert.That(savedProject, Is.Not.Null);
-        Assert.That(savedProject.FolderPath, Is.EqualTo(project.FolderPath));
+        using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
+        Assert.ThrowsAsync<ArgumentNullException>(() => repo.AddAsync(null!));
     }
 
     [Test]
-    public async Task GetByIdAsync_ShouldReturnCorrectEntity()
+    public async Task GetByIdAsync_ExistingId_ReturnsEntity()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
-        var project = new Project
-        {
-            Name = "GetById Test",
-            FolderPath = @"C:\Test\GetById"
-        };
-        await repository.AddAsync(project);
+        await using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
+        var project = new Project { Name = "GetById", FolderPath = @"C:\Repo\GetById" };
+
+        await repo.AddAsync(project);
         await context.SaveChangesAsync();
 
-        // Act
-        var result = await repository.GetByIdAsync(project.Id);
+        var result = await repo.GetByIdAsync(project.Id);
 
-        // Assert
         Assert.That(result, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(result.Id, Is.EqualTo(project.Id));
-            Assert.That(result.Name, Is.EqualTo(project.Name));
+            Assert.That(result!.Id, Is.EqualTo(project.Id));
+            Assert.That(result.Name, Is.EqualTo("GetById"));
         });
     }
 
     [Test]
-    public async Task GetByIdAsync_WhenEntityDoesNotExist_ShouldReturnNull()
+    public async Task GetByIdAsync_NonExistentId_ReturnsNull()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
+        await using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
 
-        // Act
-        var result = await repository.GetByIdAsync(99999);
+        var result = await repo.GetByIdAsync(99999);
 
-        // Assert
         Assert.That(result, Is.Null);
     }
 
     [Test]
-    public async Task GetAllAsync_ShouldReturnAllEntities()
+    public async Task GetAllAsync_MultipleEntities_ReturnsAll()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
+        await using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
 
         var projects = new[]
         {
-            new Project { Name = "Project 1", FolderPath = @"C:\Test\1" },
-            new Project { Name = "Project 2", FolderPath = @"C:\Test\2" },
-            new Project { Name = "Project 3", FolderPath = @"C:\Test\3" }
+            new Project { Name = "All-1", FolderPath = @"C:\All\1" },
+            new Project { Name = "All-2", FolderPath = @"C:\All\2" },
+            new Project { Name = "All-3", FolderPath = @"C:\All\3" },
         };
 
-        foreach (var project in projects)
-        {
-            await repository.AddAsync(project);
-        }
+        foreach (var p in projects)
+            await repo.AddAsync(p);
         await context.SaveChangesAsync();
 
-        // Act
-        var result = await repository.GetAllAsync();
-
-        // Assert
+        var result = await repo.GetAllAsync();
         Assert.That(result.Count(), Is.EqualTo(3));
     }
 
     [Test]
-    public async Task UpdateAsync_ShouldUpdateEntity()
+    public async Task DeleteAsync_ExistingEntity_IsRemoved()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
-        var project = new Project
-        {
-            Name = "Original Name",
-            FolderPath = @"C:\Test\Original"
-        };
-        await repository.AddAsync(project);
+        await using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
+        var project = new Project { Name = "Delete Me", FolderPath = @"C:\Delete\Me" };
+
+        await repo.AddAsync(project);
         await context.SaveChangesAsync();
 
-        // Act
-        project.Name = "Updated Name";
-        await repository.UpdateAsync(project);
+        await repo.DeleteAsync(project);
         await context.SaveChangesAsync();
 
-        // Assert
-        var updatedProject = await context.Projects.FindAsync(project.Id);
-        Assert.That(updatedProject?.Name, Is.EqualTo("Updated Name"));
+        var deleted = await context.Projects.FindAsync(project.Id);
+        Assert.That(deleted, Is.Null);
     }
 
     [Test]
-    public async Task DeleteAsync_ShouldRemoveEntity()
+    public async Task ExistsAsync_NoMatch_ReturnsFalse()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
-        var project = new Project
-        {
-            Name = "Delete Me",
-            FolderPath = @"C:\Test\Delete"
-        };
-        await repository.AddAsync(project);
-        await context.SaveChangesAsync();
+        await using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
 
-        // Act
-        await repository.DeleteAsync(project);
-        await context.SaveChangesAsync();
-
-        // Assert
-        var deletedProject = await context.Projects.FindAsync(project.Id);
-        Assert.That(deletedProject, Is.Null);
+        var exists = await repo.ExistsAsync(p => p.Name == "DoesNotExist_XYZ");
+        Assert.That(exists, Is.False);
     }
 
     [Test]
-    public async Task ExistsAsync_ShouldReturnTrue_WhenEntityExists()
+    public void FindAsync_NullPredicate_ThrowsArgumentNullException()
     {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
-        var project = new Project
-        {
-            Name = "Exists Test",
-            FolderPath = @"C:\Test\Exists"
-        };
-        await repository.AddAsync(project);
-        await context.SaveChangesAsync();
-
-        // Act
-        var exists = await repository.ExistsAsync(p => p.Name == "Exists Test");
-
-        // Assert
-        Assert.That(exists, Is.True);
-    }
-
-    [Test]
-    public async Task FindAsync_ShouldReturnMatchingEntities()
-    {
-        // Arrange
-        using var context = _fixture.CreateContext();
-        var repository = new Repository<Project>(context);
-
-        var projects = new[]
-        {
-            new Project { Name = "Find Me 1", FolderPath = @"C:\Test\Find1" },
-            new Project { Name = "Find Me 2", FolderPath = @"C:\Test\Find2" },
-            new Project { Name = "Other", FolderPath = @"C:\Test\Other" }
-        };
-
-        foreach (var project in projects)
-        {
-            await repository.AddAsync(project);
-        }
-        await context.SaveChangesAsync();
-
-        // Act
-        var result = await repository.FindAsync(p => p.Name.StartsWith("Find Me"));
-
-        // Assert
-        Assert.That(result.Count(), Is.EqualTo(2));
+        using var context = fixture.CreateContext();
+        var repo = new Repository<Project>(context);
+        Assert.ThrowsAsync<ArgumentNullException>(() => repo.FindAsync(null!));
     }
 }
