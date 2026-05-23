@@ -1,4 +1,6 @@
-﻿namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
+﻿using Entities;
+
+namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
 {
     [TestFixture]
     public class PerformanceTestStructureTests : EntityStructureTestBase<PerformanceTest>

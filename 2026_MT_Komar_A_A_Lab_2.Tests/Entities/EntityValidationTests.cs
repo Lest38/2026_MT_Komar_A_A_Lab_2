@@ -50,40 +50,15 @@ public class EntityValidationTests
     }
 
     [Test]
-    public void PipelineStepExecution_EmptyObject_FailsOnStatus()
-    {
-        var step = new PipelineStepExecution();
-        Assert.Multiple(() =>
-        {
-            Assert.That(Validate(step, out _), Is.False);
-            Assert.That(HasErrorFor(step, nameof(PipelineStepExecution.Status)), Is.True);
-        });
-    }
-
-    [Test]
-    public void PipelineStepExecution_StatusExceedsMaxLength_Fails()
-    {
-        var step = new PipelineStepExecution
-        {
-            ProjectId = 1,
-            StageTypeId = 1,
-            Status = new string('A', 21),
-            StartedAt = DateTime.UtcNow,
-            DurationMs = 1000
-        };
-        Assert.That(HasErrorFor(step, nameof(PipelineStepExecution.Status)), Is.True);
-    }
-
-    [Test]
     public void PipelineStepExecution_ValidData_Passes()
     {
         var step = new PipelineStepExecution
         {
             ProjectId = 1,
             StageTypeId = 1,
-            Status = "Success",
+            ExecutionStatusId = 2,
             StartedAt = DateTime.UtcNow,
-            DurationMs = 1000
+            DurationMs = 1000,
         };
         Assert.Multiple(() =>
         {
@@ -125,7 +100,7 @@ public class EntityValidationTests
             PipelineStepExecutionId = 1,
             LoggedAt = DateTime.UtcNow,
             Severity = "Error",
-            Code = "CS0246",
+            IssueCode = new IssueCode { Code = "CS0246" },
             Message = "Type not found"
         };
         Assert.Multiple(() =>

@@ -1,5 +1,4 @@
 ﻿namespace Entities;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -21,8 +20,7 @@ public class PipelineStepExecution : BaseEntity<int>
     public int StageTypeId { get; set; }
 
     [Required]
-    [MaxLength(20)]
-    public string Status { get; set; } = string.Empty;
+    public int ExecutionStatusId { get; set; }
 
     [Required]
     public DateTime StartedAt { get; set; }
@@ -42,10 +40,15 @@ public class PipelineStepExecution : BaseEntity<int>
     [ForeignKey(nameof(StageTypeId))]
     public virtual StageType StageType { get; set; } = null!;
 
-    public virtual ICollection<IssueLog> IssueLogs { get; } = [];
+    [ForeignKey(nameof(ExecutionStatusId))]
+    public virtual ExecutionStatus ExecutionStatus { get; set; } = null!;
 
-    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } = [];
+    public virtual ICollection<IssueLog> IssueLogs { get; } =
+        [];
+
+    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } =
+        [];
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"Status={Status} Errors={TotalErrors} Warnings={TotalWarnings} Duration={DurationMs}ms {val}".TrimEnd());
+        => base.ToLogString($"Status={this.ExecutionStatus?.Name} Errors={this.TotalErrors} Warnings={this.TotalWarnings} Duration={this.DurationMs}ms {val}".TrimEnd());
 }

@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
+#nullable enable
 [Table("IssueLogs")]
 public class IssueLog : BaseEntity<int>
 {
@@ -23,8 +24,10 @@ public class IssueLog : BaseEntity<int>
     [MaxLength(20)]
     public string Severity { get; set; } = string.Empty;
 
-    [MaxLength(50)]
-    public string? Code { get; set; }
+    public int? IssueCodeId { get; set; }
+
+    [ForeignKey(nameof(IssueCodeId))]
+    public virtual IssueCode? IssueCode { get; set; }
 
     [Required]
     public string Message { get; set; } = string.Empty;
@@ -33,5 +36,5 @@ public class IssueLog : BaseEntity<int>
     public virtual PipelineStepExecution PipelineStepExecution { get; set; } = null!;
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"[{Severity}] {Code}: {Message} {val}".TrimEnd());
+        => base.ToLogString($"[{this.Severity}] {this.IssueCode?.Code}: {this.Message} {val}".TrimEnd());
 }

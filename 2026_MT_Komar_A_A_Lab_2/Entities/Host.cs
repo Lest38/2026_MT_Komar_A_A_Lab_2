@@ -27,8 +27,9 @@ public class Host : BaseEntity<int>
     [ForeignKey(nameof(CpuModelId))]
     public virtual CpuModel CpuModel { get; set; } = null!;
 
-    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } = [];
+    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } =
+        [];
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"{OperatingSystem} RAM={RamGb}GB {val}".TrimEnd());
+        => base.ToLogString($"{this.OperatingSystem} RAM={this.RamGb}GB {val}".TrimEnd());
 }

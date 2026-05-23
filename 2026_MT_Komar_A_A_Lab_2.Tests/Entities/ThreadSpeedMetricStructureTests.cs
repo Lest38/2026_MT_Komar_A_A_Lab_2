@@ -14,16 +14,14 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
         {
             Assert.Multiple(() =>
             {
-                HasPublicReadOnlyProperty("Id", typeof(int));
-                HasPublicProperty("ThreadSpeedMetricId", typeof(int));
-                HasPublicProperty("PerformanceTestId", typeof(int));
-                HasPublicProperty("HostId", typeof(int));
-                HasPublicProperty("PipelineStepExecutionId", typeof(int));
-                HasPublicProperty("SequentialTimeMs", typeof(long));
-                HasPublicProperty("ParallelTimeMs", typeof(long));
-                HasPublicProperty("EfficiencyCoefficient", typeof(decimal));
-                HasPublicProperty("StartedAt", typeof(DateTime));
-                HasPublicProperty("DurationMs", typeof(long));
+                HasPublicProperty(nameof(ThreadSpeedMetric.PerformanceTestId), typeof(int));
+                HasPublicProperty(nameof(ThreadSpeedMetric.HostId), typeof(int));
+                HasPublicProperty(nameof(ThreadSpeedMetric.PipelineStepExecutionId), typeof(int));
+                HasPublicProperty(nameof(ThreadSpeedMetric.SequentialTimeMs), typeof(long));
+                HasPublicProperty(nameof(ThreadSpeedMetric.ParallelTimeMs), typeof(long));
+                HasPublicProperty(nameof(ThreadSpeedMetric.StartedAt), typeof(DateTime));
+                HasPublicProperty(nameof(ThreadSpeedMetric.DurationMs), typeof(long));
+                HasPublicReadOnlyProperty(nameof(ThreadSpeedMetric.EfficiencyCoefficient), typeof(decimal));
             });
         }
 
@@ -35,7 +33,6 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
                 ThreadSpeedMetricId = 1,
                 SequentialTimeMs = 8000,
                 ParallelTimeMs = 1000,
-                EfficiencyCoefficient = 8.0m,
                 StartedAt = DateTime.UtcNow,
                 DurationMs = 9000
             };

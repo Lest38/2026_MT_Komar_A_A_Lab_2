@@ -47,7 +47,7 @@ public class UnitOfWorkTests
         {
             ProjectId = project.Id,
             StageTypeId = 1,
-            Status = "Success",
+            ExecutionStatusId = 2,
             StartedAt = DateTime.UtcNow,
             DurationMs = 2000,
         };
@@ -82,7 +82,7 @@ public class UnitOfWorkTests
         {
             ProjectId = project.Id,
             StageTypeId = 99999,
-            Status = "Success",
+            ExecutionStatusId = 2,
             StartedAt = DateTime.UtcNow,
             DurationMs = 100,
         };

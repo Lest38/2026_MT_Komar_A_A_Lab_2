@@ -30,7 +30,7 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
             {
                 IssueLogId = 9,
                 Severity = "Error",
-                Code = "CS0246",
+                IssueCode = new IssueCode { Code = "CS0246" },
                 Message = "Type not found",
                 LoggedAt = DateTime.UtcNow
             };

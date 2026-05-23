@@ -28,9 +28,9 @@ public class ThreadSpeedMetric : BaseEntity<int>
     [Required]
     public long ParallelTimeMs { get; set; }
 
-    [Required]
-    [Column(TypeName = "decimal(10,4)")]
-    public decimal EfficiencyCoefficient { get; set; }
+    [NotMapped]
+    public decimal EfficiencyCoefficient =>
+    this.ParallelTimeMs == 0 ? 0 : (decimal)this.SequentialTimeMs / this.ParallelTimeMs;
 
     [Required]
     public DateTime StartedAt { get; set; }
@@ -48,5 +48,5 @@ public class ThreadSpeedMetric : BaseEntity<int>
     public virtual PipelineStepExecution PipelineStepExecution { get; set; } = null!;
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"Seq={SequentialTimeMs}ms Par={ParallelTimeMs}ms Eff={EfficiencyCoefficient:F4}x {val}".TrimEnd());
+        => base.ToLogString($"Seq={this.SequentialTimeMs}ms Par={this.ParallelTimeMs}ms Eff={this.EfficiencyCoefficient:F4}x {val}".TrimEnd());
 }
