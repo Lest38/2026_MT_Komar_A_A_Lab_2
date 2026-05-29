@@ -251,7 +251,7 @@ public static class Program
             {
                 ProjectId = project.Id,
                 StageTypeId = buildStage.Id,
-                Status = "Failed",
+                ExecutionStatusId = 1,
                 StartedAt = DateTime.UtcNow,
                 DurationMs = 3_742,
                 ExitCode = 1,
@@ -266,7 +266,7 @@ public static class Program
                 PipelineStepInfoFmt,
                 step.Id,
                 buildStage.Name,
-                step.Status,
+                step.ExecutionStatusId,
                 step.DurationMs));
 
             var logs = new[]
@@ -276,7 +276,7 @@ public static class Program
                     PipelineStepExecutionId = step.Id,
                     LoggedAt = DateTime.UtcNow,
                     Severity = "Error",
-                    Code = "CS0246",
+                    IssueCode = new IssueCode { Code = "CS0246" },
                     Message = "The type or namespace name 'Foo' could not be found.",
                 },
                 new IssueLog
@@ -284,7 +284,7 @@ public static class Program
                     PipelineStepExecutionId = step.Id,
                     LoggedAt = DateTime.UtcNow.AddMilliseconds(10),
                     Severity = "Error",
-                    Code = "CS0103",
+                    IssueCode = new IssueCode { Code = "CS0103" },
                     Message = "The name 'bar' does not exist in the current context.",
                 },
             };
@@ -319,7 +319,7 @@ public static class Program
                         CultureInfo.InvariantCulture,
                         PipelineLogEntryFmt,
                         log.Severity,
-                        log.Code,
+                        log.IssueCode?.Code,
                         log.Message));
                 }
             }
@@ -379,7 +379,6 @@ public static class Program
             PipelineStepExecutionId = step.Id,
             SequentialTimeMs = seqMs,
             ParallelTimeMs = parMs,
-            EfficiencyCoefficient = efficiency,
             StartedAt = DateTime.UtcNow,
             DurationMs = seqMs + parMs,
         };
@@ -412,14 +411,14 @@ public static class Program
         Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryPipelineStepsFmt, steps.Count()));
         foreach (var s in steps)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryStepEntryFmt, s.Id, s.Status, s.TotalErrors, s.TotalWarnings, s.DurationMs));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryStepEntryFmt, s.Id, s.ExecutionStatus?.Name ?? s.ExecutionStatusId.ToString(CultureInfo.InvariantCulture), s.TotalErrors, s.TotalWarnings, s.DurationMs));
         }
 
         var issueLogs = await uow.IssueLogs.GetAllAsync().ConfigureAwait(false);
         Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueLogsFmt, issueLogs.Count()));
         foreach (var il in issueLogs)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueEntryFmt, il.Severity, il.Code, il.Message));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueEntryFmt, il.Severity, il.IssueCode?.Code, il.Message));
         }
 
         var metrics = await uow.ThreadSpeedMetrics.GetAllAsync().ConfigureAwait(false);
