@@ -21,8 +21,9 @@ public class Project : BaseEntity<int>
     [MaxLength(500)]
     public string FolderPath { get; set; } = string.Empty;
 
-    public virtual ICollection<PipelineStepExecution> PipelineStepExecutions { get; } = [];
+    public virtual ICollection<PipelineStepExecution> PipelineStepExecutions { get; } =
+        [];
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"{Name} @ {FolderPath} {val}".TrimEnd());
+        => base.ToLogString($"{this.Name} @ {this.FolderPath} {val}".TrimEnd());
 }

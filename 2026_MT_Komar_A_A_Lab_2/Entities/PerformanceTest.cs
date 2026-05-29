@@ -1,5 +1,4 @@
 ﻿namespace Entities;
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,8 +15,9 @@ public class PerformanceTest : BaseEntity<int>
     [Required]
     public string Description { get; set; } = string.Empty;
 
-    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } = [];
+    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } =
+        [];
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"{Description} {val}".TrimEnd());
+        => base.ToLogString($"{this.Description} {val}".TrimEnd());
 }

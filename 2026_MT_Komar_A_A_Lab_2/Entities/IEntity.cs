@@ -1,6 +1,6 @@
 ﻿namespace Entities;
 
-public interface IEntity<TKey>
+public interface IEntity<out TKey>
     where TKey : struct
 {
     TKey Id { get; }

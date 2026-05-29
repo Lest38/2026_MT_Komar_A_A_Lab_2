@@ -17,8 +17,9 @@ public class StageType : BaseEntity<int>
     [MaxLength(50)]
     public string Name { get; set; } = string.Empty;
 
-    public virtual ICollection<PipelineStepExecution> PipelineStepExecutions { get; } = [];
+    public virtual ICollection<PipelineStepExecution> PipelineStepExecutions { get; } =
+        [];
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"{Name} {val}".TrimEnd());
+        => base.ToLogString($"{this.Name} {val}".TrimEnd());
 }

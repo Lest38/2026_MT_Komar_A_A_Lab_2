@@ -23,7 +23,8 @@ public class CpuModel : BaseEntity<int>
     [Required]
     public int LogicalThreadCount { get; set; }
 
-    public virtual ICollection<Host> Hosts { get; } = [];
+    public virtual ICollection<Host> Hosts { get; } =
+        [];
 
     public override string ToLogString(string val = "")
         => base.ToLogString($"{this.ModelName} Cores={this.PhysicalCoreCount} Threads={this.LogicalThreadCount} {val}".TrimEnd());
