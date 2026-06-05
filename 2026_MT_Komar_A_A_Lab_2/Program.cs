@@ -143,7 +143,7 @@ public static class Program
         var existing = await uow.Hosts.GetDefaultHostAsync().ConfigureAwait(false);
         if (existing is not null)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, HostAlreadySeededFmt, existing.Id, existing.OperatingSystem, existing.RamGb));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, HostAlreadySeededFmt, existing.Id, existing.OperatingSystemTypeId, existing.RamGb));
             return existing;
         }
 
@@ -151,7 +151,7 @@ public static class Program
         await uow.Hosts.AddAsync(host).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
 
-        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, HostCreatedFmt, host.Id, host.CpuModelId, host.RamGb, host.OperatingSystem));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, HostCreatedFmt, host.Id, host.CpuModelId, host.RamGb, host.OperatingSystemTypeId));
         return host;
     }
 
@@ -227,8 +227,6 @@ public static class Program
             return;
         }
 
-        // Получаем SeverityType "Error" из справочника (seeded при миграции, Id=1)
-        // Получаем IssueCodes из справочника или создаём при необходимости
         var issueCode1 = await uow.IssueCodes.GetByCodeAsync("CS0246").ConfigureAwait(false)
                          ?? new IssueCode { Code = "CS0246", Description = "The type or namespace name could not be found" };
         var issueCode2 = await uow.IssueCodes.GetByCodeAsync("CS0103").ConfigureAwait(false)
@@ -360,7 +358,6 @@ public static class Program
             SequentialTimeMs = seqMs,
             ParallelTimeMs = parMs,
             StartedAt = DateTime.UtcNow,
-            DurationMs = seqMs + parMs,
         };
 
         await uow.ThreadSpeedMetrics.AddAsync(metric).ConfigureAwait(false);
@@ -431,7 +428,7 @@ public static class Program
         Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryHostsFmt, hosts.Count()));
         foreach (var h in hosts)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryHostEntryFmt, h.Id, h.CpuModelId, h.RamGb, h.OperatingSystem));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryHostEntryFmt, h.Id, h.CpuModelId, h.RamGb, h.OperatingSystemType));
         }
 
         var perfTests = await uow.PerformanceTests.GetAllAsync().ConfigureAwait(false);

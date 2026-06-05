@@ -104,16 +104,9 @@ public class EntityValidationTests
     }
 
     [Test]
-    public void Host_OperatingSystemExceedsMaxLength_Fails()
-    {
-        var host = new Host { CpuModelId = 1, RamGb = 32m, OperatingSystem = new string('W', 201) };
-        Assert.That(HasErrorFor(host, nameof(Host.OperatingSystem)), Is.True);
-    }
-
-    [Test]
     public void Host_ValidData_Passes()
     {
-        var host = new Host { CpuModelId = 1, RamGb = 32m, OperatingSystem = "Windows 11" };
+        var host = new Host { CpuModelId = 1, RamGb = 32m, OperatingSystemTypeId = 1 };
         Assert.Multiple(() =>
         {
             Assert.That(Validate(host, out var results), Is.True);

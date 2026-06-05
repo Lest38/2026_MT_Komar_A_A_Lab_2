@@ -57,12 +57,26 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OperatingSystemTypes",
+                columns: table => new
+                {
+                    OperatingSystemTypeId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OperatingSystemTypes", x => x.OperatingSystemTypeId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PerformanceTests",
                 columns: table => new
                 {
                     PerformanceTestId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Description = table.Column<string>(type: "TEXT", nullable: false)
+                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -116,9 +130,9 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                 {
                     HostId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    CpuModelId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CpuModelId = table.Column<int>(type: "INTEGER", nullable: true),
                     RamGb = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
-                    OperatingSystem = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false)
+                    OperatingSystemTypeId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -127,7 +141,12 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                         name: "FK_Hosts_CpuModels_CpuModelId",
                         column: x => x.CpuModelId,
                         principalTable: "CpuModels",
-                        principalColumn: "CpuModelId",
+                        principalColumn: "CpuModelId");
+                    table.ForeignKey(
+                        name: "FK_Hosts_OperatingSystemTypes_OperatingSystemTypeId",
+                        column: x => x.OperatingSystemTypeId,
+                        principalTable: "OperatingSystemTypes",
+                        principalColumn: "OperatingSystemTypeId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -212,8 +231,7 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                     PipelineStepExecutionId = table.Column<int>(type: "INTEGER", nullable: false),
                     SequentialTimeMs = table.Column<long>(type: "INTEGER", nullable: false),
                     ParallelTimeMs = table.Column<long>(type: "INTEGER", nullable: false),
-                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DurationMs = table.Column<long>(type: "INTEGER", nullable: false)
+                    StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -239,6 +257,16 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "CpuModels",
+                columns: new[] { "CpuModelId", "LogicalThreadCount", "ModelName", "PhysicalCoreCount" },
+                values: new object[,]
+                {
+                    { 1, 32, "AMD Ryzen 9 7950X", 16 },
+                    { 2, 32, "Intel Core i9-13900K", 24 },
+                    { 3, 12, "AMD Ryzen 5 5600X", 6 }
+                });
+
+            migrationBuilder.InsertData(
                 table: "ExecutionStatuses",
                 columns: new[] { "ExecutionStatusId", "Description", "Name" },
                 values: new object[,]
@@ -247,6 +275,17 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                     { 2, "Step failed", "Failed" },
                     { 3, "Step was skipped", "Skipped" },
                     { 4, "Step is in progress", "Running" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "OperatingSystemTypes",
+                columns: new[] { "OperatingSystemTypeId", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, null, "Windows 11 Pro (64-bit)" },
+                    { 2, null, "Windows 10 Pro (64-bit)" },
+                    { 3, null, "Ubuntu 24.04 LTS (64-bit)" },
+                    { 4, null, "macOS Sequoia 15" }
                 });
 
             migrationBuilder.InsertData(
@@ -288,6 +327,11 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                 column: "CpuModelId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Hosts_OperatingSystemTypeId",
+                table: "Hosts",
+                column: "OperatingSystemTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_IssueCodes_Code",
                 table: "IssueCodes",
                 column: "Code",
@@ -307,6 +351,12 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                 name: "IX_IssueLogs_SeverityTypeId",
                 table: "IssueLogs",
                 column: "SeverityTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OperatingSystemTypes_Name",
+                table: "OperatingSystemTypes",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PerformanceTests_Description",
@@ -389,6 +439,9 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
 
             migrationBuilder.DropTable(
                 name: "CpuModels");
+
+            migrationBuilder.DropTable(
+                name: "OperatingSystemTypes");
 
             migrationBuilder.DropTable(
                 name: "ExecutionStatuses");

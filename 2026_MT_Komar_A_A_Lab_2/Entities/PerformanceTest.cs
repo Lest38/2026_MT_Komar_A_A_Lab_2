@@ -1,4 +1,5 @@
 ﻿namespace Entities;
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,6 +14,7 @@ public class PerformanceTest : BaseEntity<int>
     public override int Id => this.PerformanceTestId;
 
     [Required]
+    [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
     public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } =

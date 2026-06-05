@@ -11,7 +11,7 @@ public class DefaultDataFactory : IDataFactory
         {
             CpuModelId = 1,
             RamGb = 32.00m,
-            OperatingSystem = "Windows 11 Pro (64-bit)",
+            OperatingSystemTypeId = 1,
         };
 
     public IEnumerable<PerformanceTest> CreatePerformanceTests() =>

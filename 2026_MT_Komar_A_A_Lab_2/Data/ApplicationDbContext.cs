@@ -33,6 +33,8 @@ namespace Data
 
         public DbSet<Host> Hosts { get; set; }
 
+        public DbSet<OperatingSystemType> OperatingSystemTypes { get; set; }
+
         public DbSet<PerformanceTest> PerformanceTests { get; set; }
 
         public DbSet<ThreadSpeedMetric> ThreadSpeedMetrics { get; set; }
@@ -69,6 +71,9 @@ namespace Data
                 .HasIndex(ic => ic.Code)
                 .IsUnique();
 
+            modelBuilder?.Entity<OperatingSystemType>()
+                .HasIndex(os => os.Name).IsUnique();
+
             modelBuilder?.Entity<StageType>().HasData(
                 new StageType { StageTypeId = 1, Name = "Build" },
                 new StageType { StageTypeId = 2, Name = "Test" },
@@ -90,6 +95,12 @@ namespace Data
                 new ExecutionStatus { ExecutionStatusId = 2, Name = "Failed", Description = "Step failed" },
                 new ExecutionStatus { ExecutionStatusId = 3, Name = "Skipped", Description = "Step was skipped" },
                 new ExecutionStatus { ExecutionStatusId = 4, Name = "Running", Description = "Step is in progress" });
+
+            modelBuilder?.Entity<OperatingSystemType>().HasData(
+                new OperatingSystemType { OperatingSystemTypeId = 1, Name = "Windows 11 Pro (64-bit)" },
+                new OperatingSystemType { OperatingSystemTypeId = 2, Name = "Windows 10 Pro (64-bit)" },
+                new OperatingSystemType { OperatingSystemTypeId = 3, Name = "Ubuntu 24.04 LTS (64-bit)" },
+                new OperatingSystemType { OperatingSystemTypeId = 4, Name = "macOS Sequoia 15" });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

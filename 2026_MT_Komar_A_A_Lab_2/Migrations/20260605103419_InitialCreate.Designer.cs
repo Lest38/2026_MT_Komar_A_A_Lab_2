@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace _2026_MT_Komar_A_A_Lab_2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260601083142_InitialCreate")]
+    [Migration("20260605103419_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -43,6 +43,29 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                         .IsUnique();
 
                     b.ToTable("CpuModels");
+
+                    b.HasData(
+                        new
+                        {
+                            CpuModelId = 1,
+                            LogicalThreadCount = 32,
+                            ModelName = "AMD Ryzen 9 7950X",
+                            PhysicalCoreCount = 16
+                        },
+                        new
+                        {
+                            CpuModelId = 2,
+                            LogicalThreadCount = 32,
+                            ModelName = "Intel Core i9-13900K",
+                            PhysicalCoreCount = 24
+                        },
+                        new
+                        {
+                            CpuModelId = 3,
+                            LogicalThreadCount = 12,
+                            ModelName = "AMD Ryzen 5 5600X",
+                            PhysicalCoreCount = 6
+                        });
                 });
 
             modelBuilder.Entity("Entities.ExecutionStatus", b =>
@@ -100,13 +123,11 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CpuModelId")
+                    b.Property<int?>("CpuModelId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("OperatingSystem")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("TEXT");
+                    b.Property<int>("OperatingSystemTypeId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<decimal>("RamGb")
                         .HasColumnType("decimal(5,2)");
@@ -114,6 +135,8 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                     b.HasKey("HostId");
 
                     b.HasIndex("CpuModelId");
+
+                    b.HasIndex("OperatingSystemTypeId");
 
                     b.ToTable("Hosts");
                 });
@@ -174,6 +197,51 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                     b.ToTable("IssueLogs");
                 });
 
+            modelBuilder.Entity("Entities.OperatingSystemType", b =>
+                {
+                    b.Property<int>("OperatingSystemTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("OperatingSystemTypeId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("OperatingSystemTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            OperatingSystemTypeId = 1,
+                            Name = "Windows 11 Pro (64-bit)"
+                        },
+                        new
+                        {
+                            OperatingSystemTypeId = 2,
+                            Name = "Windows 10 Pro (64-bit)"
+                        },
+                        new
+                        {
+                            OperatingSystemTypeId = 3,
+                            Name = "Ubuntu 24.04 LTS (64-bit)"
+                        },
+                        new
+                        {
+                            OperatingSystemTypeId = 4,
+                            Name = "macOS Sequoia 15"
+                        });
+                });
+
             modelBuilder.Entity("Entities.PerformanceTest", b =>
                 {
                     b.Property<int>("PerformanceTestId")
@@ -182,6 +250,7 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.HasKey("PerformanceTestId");
@@ -341,9 +410,6 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("DurationMs")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("HostId")
                         .HasColumnType("INTEGER");
 
@@ -377,11 +443,17 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
                 {
                     b.HasOne("Entities.CpuModel", "CpuModel")
                         .WithMany("Hosts")
-                        .HasForeignKey("CpuModelId")
+                        .HasForeignKey("CpuModelId");
+
+                    b.HasOne("Entities.OperatingSystemType", "OperatingSystemType")
+                        .WithMany("Hosts")
+                        .HasForeignKey("OperatingSystemTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("CpuModel");
+
+                    b.Navigation("OperatingSystemType");
                 });
 
             modelBuilder.Entity("Entities.IssueLog", b =>
@@ -481,6 +553,11 @@ namespace _2026_MT_Komar_A_A_Lab_2.Migrations
             modelBuilder.Entity("Entities.IssueCode", b =>
                 {
                     b.Navigation("IssueLogs");
+                });
+
+            modelBuilder.Entity("Entities.OperatingSystemType", b =>
+                {
+                    b.Navigation("Hosts");
                 });
 
             modelBuilder.Entity("Entities.PerformanceTest", b =>

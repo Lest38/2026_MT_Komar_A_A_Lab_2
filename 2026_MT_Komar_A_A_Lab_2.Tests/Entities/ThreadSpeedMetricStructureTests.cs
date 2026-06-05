@@ -20,7 +20,7 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
                 HasPublicProperty(nameof(ThreadSpeedMetric.SequentialTimeMs), typeof(long));
                 HasPublicProperty(nameof(ThreadSpeedMetric.ParallelTimeMs), typeof(long));
                 HasPublicProperty(nameof(ThreadSpeedMetric.StartedAt), typeof(DateTime));
-                HasPublicProperty(nameof(ThreadSpeedMetric.DurationMs), typeof(long));
+                HasPublicReadOnlyProperty(nameof(ThreadSpeedMetric.DurationMs), typeof(long));
                 HasPublicReadOnlyProperty(nameof(ThreadSpeedMetric.EfficiencyCoefficient), typeof(decimal));
             });
         }
@@ -34,7 +34,6 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
                 SequentialTimeMs = 8000,
                 ParallelTimeMs = 1000,
                 StartedAt = DateTime.UtcNow,
-                DurationMs = 9000
             };
             var log = entity.ToLogString();
             Assert.Multiple(() =>
@@ -42,6 +41,17 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
                 Assert.That(log, Does.Contain("8000"));
                 Assert.That(log, Does.Contain("1000"));
             });
+        }
+
+        [Test]
+        public void DurationMs_IsComputedFromSeqAndPar()
+        {
+            var entity = new ThreadSpeedMetric
+            {
+                SequentialTimeMs = 8_240,
+                ParallelTimeMs = 1_340,
+            };
+            Assert.That(entity.DurationMs, Is.EqualTo(9_580));
         }
     }
 }

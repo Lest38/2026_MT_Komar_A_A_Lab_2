@@ -1,5 +1,4 @@
-﻿// Repositories/IRepository.cs
-namespace Repositories;
+﻿namespace Repositories;
 
 using Entities;
 using System;
