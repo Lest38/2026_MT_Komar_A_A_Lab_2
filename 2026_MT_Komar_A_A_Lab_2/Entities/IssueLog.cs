@@ -1,4 +1,4 @@
-﻿namespace Entities;
+namespace Entities;
 
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -21,8 +21,10 @@ public class IssueLog : BaseEntity<int>
     public DateTime LoggedAt { get; set; }
 
     [Required]
-    [MaxLength(20)]
-    public string Severity { get; set; } = string.Empty;
+    public int SeverityTypeId { get; set; }
+
+    [ForeignKey(nameof(SeverityTypeId))]
+    public virtual SeverityType SeverityType { get; set; } = null!;
 
     public int? IssueCodeId { get; set; }
 
@@ -36,5 +38,5 @@ public class IssueLog : BaseEntity<int>
     public virtual PipelineStepExecution PipelineStepExecution { get; set; } = null!;
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"[{this.Severity}] {this.IssueCode?.Code}: {this.Message} {val}".TrimEnd());
+        => base.ToLogString($"[{this.SeverityType?.Name}] {this.IssueCode?.Code}: {this.Message} {val}".TrimEnd());
 }

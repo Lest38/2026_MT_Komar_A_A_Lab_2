@@ -19,13 +19,14 @@ public class UnitOfWork(ApplicationDbContext context)
     private IRepository<StageType>? stageTypes;
     private IPipelineStepExecutionRepository? pipelineStepExecutions;
     private IIssueLogRepository? issueLogs;
+    private IIssueCodeRepository? issueCodes;
     private IRepository<CpuModel>? cpuModels;
     private IHostRepository? hosts;
     private IPerformanceTestRepository? performanceTests;
     private IThreadSpeedMetricRepository? threadSpeedMetrics;
 
     public IProjectRepository Projects =>
-            this.projects ??= new ProjectRepository(this.context);
+        this.projects ??= new ProjectRepository(this.context);
 
     public IRepository<StageType> StageTypes =>
         this.stageTypes ??= new Repository<StageType>(this.context);
@@ -35,6 +36,9 @@ public class UnitOfWork(ApplicationDbContext context)
 
     public IIssueLogRepository IssueLogs =>
         this.issueLogs ??= new IssueLogRepository(this.context);
+
+    public IIssueCodeRepository IssueCodes =>
+        this.issueCodes ??= new IssueCodeRepository(this.context);
 
     public IRepository<CpuModel> CpuModels =>
         this.cpuModels ??= new Repository<CpuModel>(this.context);

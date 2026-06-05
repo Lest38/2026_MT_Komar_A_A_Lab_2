@@ -1,4 +1,5 @@
-﻿using Entities;
+using Entities;
+using Factories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data
@@ -14,85 +15,88 @@ namespace Data
         {
         }
 
-        public DbSet<Project> Projects { get; set; } = null!;
+        public DbSet<Project> Projects { get; set; }
 
-        public DbSet<StageType> StageTypes { get; set; } = null!;
+        public DbSet<StageType> StageTypes { get; set; }
 
-        public DbSet<PipelineStepExecution> PipelineStepExecutions { get; set; } = null!;
+        public DbSet<PipelineStepExecution> PipelineStepExecutions { get; set; }
 
-        public DbSet<IssueLog> IssueLogs { get; set; } = null!;
+        public DbSet<IssueLog> IssueLogs { get; set; }
 
-        public DbSet<CpuModel> CpuModels { get; set; } = null!;
+        public DbSet<IssueCode> IssueCodes { get; set; }
 
-        public DbSet<Host> Hosts { get; set; } = null!;
+        public DbSet<SeverityType> SeverityTypes { get; set; }
 
-        public DbSet<PerformanceTest> PerformanceTests { get; set; } = null!;
+        public DbSet<ExecutionStatus> ExecutionStatuses { get; set; }
 
-        public DbSet<ThreadSpeedMetric> ThreadSpeedMetrics { get; set; } = null!;
+        public DbSet<CpuModel> CpuModels { get; set; }
+
+        public DbSet<Host> Hosts { get; set; }
+
+        public DbSet<PerformanceTest> PerformanceTests { get; set; }
+
+        public DbSet<ThreadSpeedMetric> ThreadSpeedMetrics { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder?.Entity<Project>()
+                .HasIndex(p => p.FolderPath)
+                .IsUnique();
+
+            modelBuilder?.Entity<StageType>()
+                .HasIndex(st => st.Name)
+                .IsUnique();
+
+            modelBuilder?.Entity<PerformanceTest>()
+                .HasIndex(pt => pt.Description)
+                .IsUnique();
+
             modelBuilder?.Entity<CpuModel>()
-                .Property(e => e.CpuModelId).HasColumnName("Id");
+                .HasIndex(cm => cm.ModelName)
+                .IsUnique();
 
-            modelBuilder.Entity<Host>()
-                .Property(e => e.HostId).HasColumnName("Id");
+            modelBuilder?.Entity<SeverityType>()
+                .HasIndex(s => s.Name)
+                .IsUnique();
 
-            modelBuilder.Entity<Project>()
-                .Property(e => e.ProjectId).HasColumnName("Id");
+            modelBuilder?.Entity<ExecutionStatus>()
+                .HasIndex(es => es.Name)
+                .IsUnique();
 
-            modelBuilder.Entity<StageType>()
-                .Property(e => e.StageTypeId).HasColumnName("Id");
+            modelBuilder?.Entity<IssueCode>()
+                .HasIndex(ic => ic.Code)
+                .IsUnique();
 
-            modelBuilder.Entity<PerformanceTest>()
-                .Property(e => e.PerformanceTestId).HasColumnName("Id");
-
-            modelBuilder.Entity<PipelineStepExecution>()
-                .Property(e => e.PipelineStepExecutionId).HasColumnName("Id");
-
-            modelBuilder.Entity<IssueLog>()
-                .Property(e => e.IssueLogId).HasColumnName("Id");
-
-            modelBuilder.Entity<ThreadSpeedMetric>()
-                .Property(e => e.ThreadSpeedMetricId).HasColumnName("Id");
-
-            modelBuilder.Entity<Project>()
-                .HasIndex(p => p.FolderPath).IsUnique();
-
-            modelBuilder.Entity<StageType>()
-                .HasIndex(st => st.Name).IsUnique();
-
-            modelBuilder.Entity<PerformanceTest>()
-                .HasIndex(pt => pt.Description).IsUnique();
-
-            modelBuilder.Entity<CpuModel>()
-                .HasIndex(cm => cm.ModelName).IsUnique();
-
-            modelBuilder.Entity<StageType>().HasData(
+            modelBuilder?.Entity<StageType>().HasData(
                 new StageType { StageTypeId = 1, Name = "Build" },
                 new StageType { StageTypeId = 2, Name = "Test" },
                 new StageType { StageTypeId = 3, Name = "Clean" },
                 new StageType { StageTypeId = 4, Name = "Run" });
 
-            modelBuilder.Entity<CpuModel>().HasData(
-                new CpuModel { CpuModelId = 1, ModelName = "Intel Core i7-12700K", PhysicalCoreCount = 12, LogicalThreadCount = 20 },
-                new CpuModel { CpuModelId = 2, ModelName = "AMD Ryzen 9 5900X", PhysicalCoreCount = 12, LogicalThreadCount = 24 },
-                new CpuModel { CpuModelId = 3, ModelName = "Intel Core i9-13900K", PhysicalCoreCount = 24, LogicalThreadCount = 32 });
+            modelBuilder?.Entity<CpuModel>().HasData(
+                new CpuModel { CpuModelId = 1, ModelName = "AMD Ryzen 9 7950X", PhysicalCoreCount = 16, LogicalThreadCount = 32 },
+                new CpuModel { CpuModelId = 2, ModelName = "Intel Core i9-13900K", PhysicalCoreCount = 24, LogicalThreadCount = 32 },
+                new CpuModel { CpuModelId = 3, ModelName = "AMD Ryzen 5 5600X", PhysicalCoreCount = 6, LogicalThreadCount = 12 });
 
-            modelBuilder.Entity<ExecutionStatus>().HasData(
-    new ExecutionStatus { ExecutionStatusId = 1, Name = "Running" },
-    new ExecutionStatus { ExecutionStatusId = 2, Name = "Success" },
-    new ExecutionStatus { ExecutionStatusId = 3, Name = "Failed" },
-    new ExecutionStatus { ExecutionStatusId = 4, Name = "Cancelled" });
+            modelBuilder?.Entity<SeverityType>().HasData(
+                new SeverityType { SeverityTypeId = 1, Name = "Error", Description = "Compilation or runtime error" },
+                new SeverityType { SeverityTypeId = 2, Name = "Warning", Description = "Non-fatal issue" },
+                new SeverityType { SeverityTypeId = 3, Name = "Info", Description = "Informational message" });
+
+            modelBuilder?.Entity<ExecutionStatus>().HasData(
+                new ExecutionStatus { ExecutionStatusId = 1, Name = "Success", Description = "Step completed successfully" },
+                new ExecutionStatus { ExecutionStatusId = 2, Name = "Failed", Description = "Step failed" },
+                new ExecutionStatus { ExecutionStatusId = 3, Name = "Skipped", Description = "Step was skipped" },
+                new ExecutionStatus { ExecutionStatusId = 4, Name = "Running", Description = "Step is in progress" });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!(optionsBuilder?.IsConfigured ?? false))
             {
-                optionsBuilder!.UseSqlite("Data Source=app.db");
+                optionsBuilder.UseSqlite("Data Source=app.db");
             }
         }
     }

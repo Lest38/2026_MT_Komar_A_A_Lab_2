@@ -68,38 +68,13 @@ public class EntityValidationTests
     }
 
     [Test]
-    public void IssueLog_EmptyObject_FailsOnSeverityAndMessage()
-    {
-        var log = new IssueLog();
-        Assert.Multiple(() =>
-        {
-            Assert.That(Validate(log, out _), Is.False);
-            Assert.That(HasErrorFor(log, nameof(IssueLog.Severity)), Is.True);
-            Assert.That(HasErrorFor(log, nameof(IssueLog.Message)), Is.True);
-        });
-    }
-
-    [Test]
-    public void IssueLog_EmptySeverity_Fails()
-    {
-        var log = new IssueLog
-        {
-            PipelineStepExecutionId = 1,
-            LoggedAt = DateTime.UtcNow,
-            Severity = string.Empty,
-            Message = "msg"
-        };
-        Assert.That(HasErrorFor(log, nameof(IssueLog.Severity)), Is.True);
-    }
-
-    [Test]
     public void IssueLog_ValidData_Passes()
     {
         var log = new IssueLog
         {
             PipelineStepExecutionId = 1,
             LoggedAt = DateTime.UtcNow,
-            Severity = "Error",
+            SeverityType = new SeverityType { Name = "Error" },
             IssueCode = new IssueCode { Code = "CS0246" },
             Message = "Type not found"
         };

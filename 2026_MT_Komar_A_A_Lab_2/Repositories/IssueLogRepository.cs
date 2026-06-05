@@ -1,4 +1,4 @@
-﻿namespace Repositories;
+namespace Repositories;
 
 using Data;
 using Entities;
@@ -21,7 +21,8 @@ public class IssueLogRepository(ApplicationDbContext context)
     public async Task<IEnumerable<IssueLog>> GetErrorsByPipelineStepExecutionIdAsync(int pipelineStepExecutionId)
     {
         return await this.DbSet
-            .Where(il => il.PipelineStepExecutionId == pipelineStepExecutionId && il.Severity == "Error")
+            .Where(il => il.PipelineStepExecutionId == pipelineStepExecutionId
+                      && il.SeverityType.Name == "Error")
             .OrderBy(il => il.LoggedAt)
             .ToListAsync().ConfigureAwait(false);
     }
@@ -29,7 +30,8 @@ public class IssueLogRepository(ApplicationDbContext context)
     public async Task<IEnumerable<IssueLog>> GetWarningsByPipelineStepExecutionIdAsync(int pipelineStepExecutionId)
     {
         return await this.DbSet
-            .Where(il => il.PipelineStepExecutionId == pipelineStepExecutionId && il.Severity == "Warning")
+            .Where(il => il.PipelineStepExecutionId == pipelineStepExecutionId
+                      && il.SeverityType.Name == "Warning")
             .OrderBy(il => il.LoggedAt)
             .ToListAsync().ConfigureAwait(false);
     }

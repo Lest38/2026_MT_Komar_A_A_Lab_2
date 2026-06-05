@@ -6,25 +6,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 #nullable enable
 
-[Table("IssueCodes")]
-public class IssueCode : BaseEntity<int>
+[Table("SeverityTypes")]
+public class SeverityType : BaseEntity<int>
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int IssueCodeId { get; set; }
+    public int SeverityTypeId { get; set; }
 
-    public override int Id => this.IssueCodeId;
+    public override int Id => this.SeverityTypeId;
 
     [Required]
     [MaxLength(20)]
-    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
-    [MaxLength(500)]
+    [MaxLength(200)]
     public string? Description { get; set; }
 
     public virtual ICollection<IssueLog> IssueLogs { get; } =
         [];
 
     public override string ToLogString(string val = "")
-        => base.ToLogString($"{this.Code} {val}".TrimEnd());
+        => base.ToLogString($"{this.Name} {val}".TrimEnd());
 }

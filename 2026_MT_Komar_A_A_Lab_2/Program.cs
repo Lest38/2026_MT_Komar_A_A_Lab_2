@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -143,12 +143,7 @@ public static class Program
         var existing = await uow.Hosts.GetDefaultHostAsync().ConfigureAwait(false);
         if (existing is not null)
         {
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                HostAlreadySeededFmt,
-                existing.Id,
-                existing.OperatingSystem,
-                existing.RamGb));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, HostAlreadySeededFmt, existing.Id, existing.OperatingSystem, existing.RamGb));
             return existing;
         }
 
@@ -156,13 +151,7 @@ public static class Program
         await uow.Hosts.AddAsync(host).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
 
-        Console.WriteLine(string.Format(
-            CultureInfo.InvariantCulture,
-            HostCreatedFmt,
-            host.Id,
-            host.CpuModelId,
-            host.RamGb,
-            host.OperatingSystem));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, HostCreatedFmt, host.Id, host.CpuModelId, host.RamGb, host.OperatingSystem));
         return host;
     }
 
@@ -172,7 +161,6 @@ public static class Program
         {
             var existing = await uow.PerformanceTests
                 .GetByDescriptionAsync(pt.Description).ConfigureAwait(false);
-
             if (existing is not null)
             {
                 Console.WriteLine(string.Format(
@@ -195,8 +183,8 @@ public static class Program
     private static async Task<Entities.Project> SeedProjectAsync(IUnitOfWork uow)
     {
         var existing = await uow.Projects
-            .GetByFolderPathAsync(Utilities.ResourceStrings.Project.DefaultFolderPath).ConfigureAwait(false);
-
+            .GetByFolderPathAsync(Utilities.ResourceStrings.Project.DefaultFolderPath)
+            .ConfigureAwait(false);
         if (existing is not null)
         {
             Console.WriteLine(string.Format(
@@ -215,11 +203,7 @@ public static class Program
         await uow.Projects.AddAsync(project).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
 
-        Console.WriteLine(string.Format(
-            CultureInfo.InvariantCulture,
-            ProjectCreatedFmt,
-            project.Id,
-            project.Name));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ProjectCreatedFmt, project.Id, project.Name));
         return project;
     }
 
@@ -237,12 +221,18 @@ public static class Program
 
         var existingSteps = await uow.PipelineStepExecutions
             .GetByProjectIdAsync(project.Id).ConfigureAwait(false);
-
         if (existingSteps.Any(s => s.StageTypeId == buildStage.Id))
         {
             Banner(PipelineStep.BuildStepAlreadyExists);
             return;
         }
+
+        // Получаем SeverityType "Error" из справочника (seeded при миграции, Id=1)
+        // Получаем IssueCodes из справочника или создаём при необходимости
+        var issueCode1 = await uow.IssueCodes.GetByCodeAsync("CS0246").ConfigureAwait(false)
+                         ?? new IssueCode { Code = "CS0246", Description = "The type or namespace name could not be found" };
+        var issueCode2 = await uow.IssueCodes.GetByCodeAsync("CS0103").ConfigureAwait(false)
+                         ?? new IssueCode { Code = "CS0103", Description = "The name does not exist in the current context" };
 
         await uow.BeginTransactionAsync().ConfigureAwait(false);
         try
@@ -251,23 +241,15 @@ public static class Program
             {
                 ProjectId = project.Id,
                 StageTypeId = buildStage.Id,
-                ExecutionStatusId = 1,
+                ExecutionStatusId = 2,
                 StartedAt = DateTime.UtcNow,
                 DurationMs = 3_742,
                 ExitCode = 1,
-                TotalErrors = 2,
-                TotalWarnings = 3,
             };
             await uow.PipelineStepExecutions.AddAsync(step).ConfigureAwait(false);
             await uow.SaveChangesAsync().ConfigureAwait(false);
 
-            Console.WriteLine(string.Format(
-                CultureInfo.InvariantCulture,
-                PipelineStepInfoFmt,
-                step.Id,
-                buildStage.Name,
-                step.ExecutionStatusId,
-                step.DurationMs));
+            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, PipelineStepInfoFmt, step.Id, buildStage.Name, step.ExecutionStatusId, step.DurationMs));
 
             var logs = new[]
             {
@@ -275,16 +257,16 @@ public static class Program
                 {
                     PipelineStepExecutionId = step.Id,
                     LoggedAt = DateTime.UtcNow,
-                    Severity = "Error",
-                    IssueCode = new IssueCode { Code = "CS0246" },
+                    SeverityTypeId = 1,
+                    IssueCode = issueCode1,
                     Message = "The type or namespace name 'Foo' could not be found.",
                 },
                 new IssueLog
                 {
                     PipelineStepExecutionId = step.Id,
                     LoggedAt = DateTime.UtcNow.AddMilliseconds(10),
-                    Severity = "Error",
-                    IssueCode = new IssueCode { Code = "CS0103" },
+                    SeverityTypeId = 1,
+                    IssueCode = issueCode2,
                     Message = "The name 'bar' does not exist in the current context.",
                 },
             };
@@ -318,7 +300,7 @@ public static class Program
                     Console.WriteLine(string.Format(
                         CultureInfo.InvariantCulture,
                         PipelineLogEntryFmt,
-                        log.Severity,
+                        log.SeverityType?.Name,
                         log.IssueCode?.Code,
                         log.Message));
                 }
@@ -356,9 +338,7 @@ public static class Program
             return;
         }
 
-        var hostMetrics = await uow.ThreadSpeedMetrics
-            .GetByHostIdAsync(host.Id).ConfigureAwait(false);
-
+        var hostMetrics = await uow.ThreadSpeedMetrics.GetByHostIdAsync(host.Id).ConfigureAwait(false);
         if (hostMetrics.Any(m => m.PerformanceTestId == perfTest.Id))
         {
             Console.WriteLine(string.Format(
@@ -386,14 +366,7 @@ public static class Program
         await uow.ThreadSpeedMetrics.AddAsync(metric).ConfigureAwait(false);
         await uow.SaveChangesAsync().ConfigureAwait(false);
 
-        Console.WriteLine(string.Format(
-            CultureInfo.InvariantCulture,
-            ThreadSpeedMetricSavedFmt,
-            perfTest.Description,
-            seqMs,
-            parMs,
-            efficiency,
-            metric.Id));
+        Console.WriteLine(string.Format(CultureInfo.InvariantCulture, ThreadSpeedMetricSavedFmt, perfTest.Description, seqMs, parMs, efficiency, metric.Id));
     }
 
     private static async Task PrintDatabaseSummaryAsync(IUnitOfWork uow)
@@ -411,14 +384,26 @@ public static class Program
         Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryPipelineStepsFmt, steps.Count()));
         foreach (var s in steps)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryStepEntryFmt, s.Id, s.ExecutionStatus?.Name ?? s.ExecutionStatusId.ToString(CultureInfo.InvariantCulture), s.TotalErrors, s.TotalWarnings, s.DurationMs));
+            Console.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                DbSummaryStepEntryFmt,
+                s.Id,
+                s.ExecutionStatus?.Name ?? s.ExecutionStatusId.ToString(CultureInfo.InvariantCulture),
+                s.TotalErrors,
+                s.TotalWarnings,
+                s.DurationMs));
         }
 
         var issueLogs = await uow.IssueLogs.GetAllAsync().ConfigureAwait(false);
         Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueLogsFmt, issueLogs.Count()));
         foreach (var il in issueLogs)
         {
-            Console.WriteLine(string.Format(CultureInfo.InvariantCulture, DbSummaryIssueEntryFmt, il.Severity, il.IssueCode?.Code, il.Message));
+            Console.WriteLine(string.Format(
+                CultureInfo.InvariantCulture,
+                DbSummaryIssueEntryFmt,
+                il.SeverityType?.Name,
+                il.IssueCode?.Code,
+                il.Message));
         }
 
         var metrics = await uow.ThreadSpeedMetrics.GetAllAsync().ConfigureAwait(false);

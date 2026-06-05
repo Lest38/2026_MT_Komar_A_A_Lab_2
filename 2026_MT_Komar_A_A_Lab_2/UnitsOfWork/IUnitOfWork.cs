@@ -23,6 +23,8 @@ public interface IUnitOfWork : IDisposable
 
     IThreadSpeedMetricRepository ThreadSpeedMetrics { get; }
 
+    IIssueCodeRepository IssueCodes { get; }
+
     Task<int> SaveChangesAsync();
 
     Task BeginTransactionAsync();

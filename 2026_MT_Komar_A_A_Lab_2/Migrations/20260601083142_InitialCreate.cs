@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace DesignTimeDbContextFactory.Migrations
+namespace _2026_MT_Komar_A_A_Lab_2.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -17,7 +17,7 @@ namespace DesignTimeDbContextFactory.Migrations
                 name: "CpuModels",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    CpuModelId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ModelName = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     PhysicalCoreCount = table.Column<int>(type: "INTEGER", nullable: false),
@@ -25,54 +25,96 @@ namespace DesignTimeDbContextFactory.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CpuModels", x => x.Id);
+                    table.PrimaryKey("PK_CpuModels", x => x.CpuModelId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExecutionStatuses",
+                columns: table => new
+                {
+                    ExecutionStatusId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExecutionStatuses", x => x.ExecutionStatusId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IssueCodes",
+                columns: table => new
+                {
+                    IssueCodeId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Code = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IssueCodes", x => x.IssueCodeId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "PerformanceTests",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    PerformanceTestId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Description = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PerformanceTests", x => x.Id);
+                    table.PrimaryKey("PK_PerformanceTests", x => x.PerformanceTestId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Projects",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    ProjectId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     FolderPath = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Projects", x => x.Id);
+                    table.PrimaryKey("PK_Projects", x => x.ProjectId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SeverityTypes",
+                columns: table => new
+                {
+                    SeverityTypeId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SeverityTypes", x => x.SeverityTypeId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "StageTypes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    StageTypeId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StageTypes", x => x.Id);
+                    table.PrimaryKey("PK_StageTypes", x => x.StageTypeId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Hosts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    HostId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     CpuModelId = table.Column<int>(type: "INTEGER", nullable: false),
                     RamGb = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
@@ -80,12 +122,12 @@ namespace DesignTimeDbContextFactory.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Hosts", x => x.Id);
+                    table.PrimaryKey("PK_Hosts", x => x.HostId);
                     table.ForeignKey(
                         name: "FK_Hosts_CpuModels_CpuModelId",
                         column: x => x.CpuModelId,
                         principalTable: "CpuModels",
-                        principalColumn: "Id",
+                        principalColumn: "CpuModelId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -93,31 +135,35 @@ namespace DesignTimeDbContextFactory.Migrations
                 name: "PipelineStepExecutions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    PipelineStepExecutionId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     ProjectId = table.Column<int>(type: "INTEGER", nullable: false),
                     StageTypeId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    ExecutionStatusId = table.Column<int>(type: "INTEGER", nullable: false),
                     StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DurationMs = table.Column<long>(type: "INTEGER", nullable: false),
-                    ExitCode = table.Column<int>(type: "INTEGER", nullable: false),
-                    TotalErrors = table.Column<int>(type: "INTEGER", nullable: false),
-                    TotalWarnings = table.Column<int>(type: "INTEGER", nullable: false)
+                    ExitCode = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PipelineStepExecutions", x => x.Id);
+                    table.PrimaryKey("PK_PipelineStepExecutions", x => x.PipelineStepExecutionId);
+                    table.ForeignKey(
+                        name: "FK_PipelineStepExecutions_ExecutionStatuses_ExecutionStatusId",
+                        column: x => x.ExecutionStatusId,
+                        principalTable: "ExecutionStatuses",
+                        principalColumn: "ExecutionStatusId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PipelineStepExecutions_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
-                        principalColumn: "Id",
+                        principalColumn: "ProjectId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PipelineStepExecutions_StageTypes_StageTypeId",
                         column: x => x.StageTypeId,
                         principalTable: "StageTypes",
-                        principalColumn: "Id",
+                        principalColumn: "StageTypeId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -125,22 +171,33 @@ namespace DesignTimeDbContextFactory.Migrations
                 name: "IssueLogs",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    IssueLogId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PipelineStepExecutionId = table.Column<int>(type: "INTEGER", nullable: false),
                     LoggedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Severity = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    Code = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    SeverityTypeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    IssueCodeId = table.Column<int>(type: "INTEGER", nullable: true),
                     Message = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IssueLogs", x => x.Id);
+                    table.PrimaryKey("PK_IssueLogs", x => x.IssueLogId);
+                    table.ForeignKey(
+                        name: "FK_IssueLogs_IssueCodes_IssueCodeId",
+                        column: x => x.IssueCodeId,
+                        principalTable: "IssueCodes",
+                        principalColumn: "IssueCodeId");
                     table.ForeignKey(
                         name: "FK_IssueLogs_PipelineStepExecutions_PipelineStepExecutionId",
                         column: x => x.PipelineStepExecutionId,
                         principalTable: "PipelineStepExecutions",
-                        principalColumn: "Id",
+                        principalColumn: "PipelineStepExecutionId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_IssueLogs_SeverityTypes_SeverityTypeId",
+                        column: x => x.SeverityTypeId,
+                        principalTable: "SeverityTypes",
+                        principalColumn: "SeverityTypeId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -148,43 +205,63 @@ namespace DesignTimeDbContextFactory.Migrations
                 name: "ThreadSpeedMetrics",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    ThreadSpeedMetricId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     PerformanceTestId = table.Column<int>(type: "INTEGER", nullable: false),
                     HostId = table.Column<int>(type: "INTEGER", nullable: false),
                     PipelineStepExecutionId = table.Column<int>(type: "INTEGER", nullable: false),
                     SequentialTimeMs = table.Column<long>(type: "INTEGER", nullable: false),
                     ParallelTimeMs = table.Column<long>(type: "INTEGER", nullable: false),
-                    EfficiencyCoefficient = table.Column<decimal>(type: "decimal(10,4)", nullable: false),
                     StartedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     DurationMs = table.Column<long>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ThreadSpeedMetrics", x => x.Id);
+                    table.PrimaryKey("PK_ThreadSpeedMetrics", x => x.ThreadSpeedMetricId);
                     table.ForeignKey(
                         name: "FK_ThreadSpeedMetrics_Hosts_HostId",
                         column: x => x.HostId,
                         principalTable: "Hosts",
-                        principalColumn: "Id",
+                        principalColumn: "HostId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ThreadSpeedMetrics_PerformanceTests_PerformanceTestId",
                         column: x => x.PerformanceTestId,
                         principalTable: "PerformanceTests",
-                        principalColumn: "Id",
+                        principalColumn: "PerformanceTestId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ThreadSpeedMetrics_PipelineStepExecutions_PipelineStepExecutionId",
                         column: x => x.PipelineStepExecutionId,
                         principalTable: "PipelineStepExecutions",
-                        principalColumn: "Id",
+                        principalColumn: "PipelineStepExecutionId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
+                table: "ExecutionStatuses",
+                columns: new[] { "ExecutionStatusId", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Step completed successfully", "Success" },
+                    { 2, "Step failed", "Failed" },
+                    { 3, "Step was skipped", "Skipped" },
+                    { 4, "Step is in progress", "Running" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "SeverityTypes",
+                columns: new[] { "SeverityTypeId", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, "Compilation or runtime error", "Error" },
+                    { 2, "Non-fatal issue", "Warning" },
+                    { 3, "Informational message", "Info" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "StageTypes",
-                columns: new[] { "Id", "Name" },
+                columns: new[] { "StageTypeId", "Name" },
                 values: new object[,]
                 {
                     { 1, "Build" },
@@ -200,9 +277,26 @@ namespace DesignTimeDbContextFactory.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ExecutionStatuses_Name",
+                table: "ExecutionStatuses",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Hosts_CpuModelId",
                 table: "Hosts",
                 column: "CpuModelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueCodes_Code",
+                table: "IssueCodes",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueLogs_IssueCodeId",
+                table: "IssueLogs",
+                column: "IssueCodeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IssueLogs_PipelineStepExecutionId",
@@ -210,10 +304,20 @@ namespace DesignTimeDbContextFactory.Migrations
                 column: "PipelineStepExecutionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_IssueLogs_SeverityTypeId",
+                table: "IssueLogs",
+                column: "SeverityTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PerformanceTests_Description",
                 table: "PerformanceTests",
                 column: "Description",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PipelineStepExecutions_ExecutionStatusId",
+                table: "PipelineStepExecutions",
+                column: "ExecutionStatusId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PipelineStepExecutions_ProjectId",
@@ -229,6 +333,12 @@ namespace DesignTimeDbContextFactory.Migrations
                 name: "IX_Projects_FolderPath",
                 table: "Projects",
                 column: "FolderPath",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SeverityTypes_Name",
+                table: "SeverityTypes",
+                column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -263,6 +373,12 @@ namespace DesignTimeDbContextFactory.Migrations
                 name: "ThreadSpeedMetrics");
 
             migrationBuilder.DropTable(
+                name: "IssueCodes");
+
+            migrationBuilder.DropTable(
+                name: "SeverityTypes");
+
+            migrationBuilder.DropTable(
                 name: "Hosts");
 
             migrationBuilder.DropTable(
@@ -273,6 +389,9 @@ namespace DesignTimeDbContextFactory.Migrations
 
             migrationBuilder.DropTable(
                 name: "CpuModels");
+
+            migrationBuilder.DropTable(
+                name: "ExecutionStatuses");
 
             migrationBuilder.DropTable(
                 name: "Projects");

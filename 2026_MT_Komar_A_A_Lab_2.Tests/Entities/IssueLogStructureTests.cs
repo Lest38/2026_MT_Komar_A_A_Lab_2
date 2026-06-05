@@ -1,4 +1,4 @@
-﻿using Entities;
+using Entities;
 
 namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
 {
@@ -18,19 +18,25 @@ namespace _2026_MT_Komar_A_A_Lab_2.Tests.Entities
                 HasPublicProperty("IssueLogId", typeof(int));
                 HasPublicProperty("PipelineStepExecutionId", typeof(int));
                 HasPublicProperty("LoggedAt", typeof(DateTime));
-                HasPublicProperty("Severity", typeof(string));
+                HasPublicProperty("SeverityTypeId", typeof(int));
                 HasPublicProperty("Message", typeof(string));
+                HasPublicProperty("IssueCodeId", typeof(int?));
             });
         }
 
         [Test]
         public void ToLogString_ContainsSeverityAndCode()
         {
+            var severityType = new SeverityType { SeverityTypeId = 1, Name = "Error" };
+            var issueCode = new IssueCode { IssueCodeId = 1, Code = "CS0246" };
+
             var entity = new IssueLog
             {
                 IssueLogId = 9,
-                Severity = "Error",
-                IssueCode = new IssueCode { Code = "CS0246" },
+                SeverityTypeId = 1,
+                SeverityType = severityType,
+                IssueCodeId = 1,
+                IssueCode = issueCode,
                 Message = "Type not found",
                 LoggedAt = DateTime.UtcNow
             };

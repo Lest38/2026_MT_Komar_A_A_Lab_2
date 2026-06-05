@@ -31,7 +31,7 @@ public class PipelineStepExecutionRepository(ApplicationDbContext context)
     {
         return await this.DbSet
             .Include(pse => pse.IssueLogs)
-            .FirstOrDefaultAsync(pse => pse.Id == id).ConfigureAwait(false);
+            .FirstOrDefaultAsync(pse => pse.PipelineStepExecutionId == id).ConfigureAwait(false);
     }
 }
-#nullable disable
+#nullable restore

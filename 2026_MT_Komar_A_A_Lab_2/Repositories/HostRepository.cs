@@ -20,7 +20,7 @@ public class HostRepository(ApplicationDbContext context)
     {
         return await this.DbSet
             .Include(h => h.CpuModel)
-            .FirstOrDefaultAsync(h => h.Id == id).ConfigureAwait(false);
+            .FirstOrDefaultAsync(h => h.HostId == id).ConfigureAwait(false);
     }
 }
 #nullable restore

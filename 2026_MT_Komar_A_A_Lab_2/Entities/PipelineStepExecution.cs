@@ -1,9 +1,12 @@
-﻿namespace Entities;
+namespace Entities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
+#nullable enable
 [Table("PipelineStepExecutions")]
 public class PipelineStepExecution : BaseEntity<int>
 {
@@ -28,11 +31,14 @@ public class PipelineStepExecution : BaseEntity<int>
     [Required]
     public long DurationMs { get; set; }
 
+    [Required]
     public int ExitCode { get; set; }
 
-    public int TotalErrors { get; set; }
+    [NotMapped]
+    public int TotalErrors => this.IssueLogs?.Count(l => l.SeverityType?.Name == "Error") ?? 0;
 
-    public int TotalWarnings { get; set; }
+    [NotMapped]
+    public int TotalWarnings => this.IssueLogs?.Count(l => l.SeverityType?.Name == "Warning") ?? 0;
 
     [ForeignKey(nameof(ProjectId))]
     public virtual Project Project { get; set; } = null!;
@@ -46,9 +52,6 @@ public class PipelineStepExecution : BaseEntity<int>
     public virtual ICollection<IssueLog> IssueLogs { get; } =
         [];
 
-    public virtual ICollection<ThreadSpeedMetric> ThreadSpeedMetrics { get; } =
-        [];
-
     public override string ToLogString(string val = "")
-        => base.ToLogString($"Status={this.ExecutionStatus?.Name} Errors={this.TotalErrors} Warnings={this.TotalWarnings} Duration={this.DurationMs}ms {val}".TrimEnd());
+        => base.ToLogString($"[{this.ExecutionStatus?.Name}] Project={this.ProjectId} Stage={this.StageTypeId} {val}".TrimEnd());
 }
