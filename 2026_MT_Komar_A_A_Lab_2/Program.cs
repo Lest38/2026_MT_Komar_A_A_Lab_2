@@ -120,6 +120,8 @@ public static class Program
                 await dbContext.Database.MigrateAsync().ConfigureAwait(false);
                 Banner(Database.MigratedUpToDate);
 
+                await SeedLookupDataAsync(unitOfWork, factory).ConfigureAwait(false);
+
                 var host = await SeedHostAsync(unitOfWork, factory).ConfigureAwait(false);
                 await SeedPerformanceTestsAsync(unitOfWork, factory).ConfigureAwait(false);
                 var project = await SeedProjectAsync(unitOfWork).ConfigureAwait(false);
@@ -136,6 +138,40 @@ public static class Program
         {
             await serviceProvider.DisposeAsync().ConfigureAwait(false);
         }
+    }
+
+    private static async Task SeedLookupDataAsync(IUnitOfWork uow, IDataFactory factory)
+    {
+        Banner("Seeding lookup tables");
+
+        foreach (var os in factory.CreateOperatingSystemTypes())
+        {
+            var existing = await uow.OperatingSystemTypes.GetByIdAsync(os.OperatingSystemTypeId).ConfigureAwait(false);
+            if (existing is null)
+            {
+                await uow.OperatingSystemTypes.AddAsync(os).ConfigureAwait(false);
+            }
+        }
+
+        foreach (var cpu in factory.CreateCpuModels())
+        {
+            var existing = await uow.CpuModels.GetByIdAsync(cpu.CpuModelId).ConfigureAwait(false);
+            if (existing is null)
+            {
+                await uow.CpuModels.AddAsync(cpu).ConfigureAwait(false);
+            }
+        }
+
+        foreach (var ic in factory.CreateIssueCodes())
+        {
+            var existing = await uow.IssueCodes.GetByCodeAsync(ic.Code).ConfigureAwait(false);
+            if (existing is null)
+            {
+                await uow.IssueCodes.AddAsync(ic).ConfigureAwait(false);
+            }
+        }
+
+        await uow.SaveChangesAsync().ConfigureAwait(false);
     }
 
     private static async Task<Entities.Host> SeedHostAsync(IUnitOfWork uow, IDataFactory factory)

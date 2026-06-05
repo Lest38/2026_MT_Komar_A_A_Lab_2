@@ -24,6 +24,7 @@ public class UnitOfWork(ApplicationDbContext context)
     private IHostRepository? hosts;
     private IPerformanceTestRepository? performanceTests;
     private IThreadSpeedMetricRepository? threadSpeedMetrics;
+    private IRepository<OperatingSystemType>? operatingSystemTypes;
 
     public IProjectRepository Projects =>
         this.projects ??= new ProjectRepository(this.context);
@@ -51,6 +52,9 @@ public class UnitOfWork(ApplicationDbContext context)
 
     public IThreadSpeedMetricRepository ThreadSpeedMetrics =>
         this.threadSpeedMetrics ??= new ThreadSpeedMetricRepository(this.context);
+
+    public IRepository<OperatingSystemType> OperatingSystemTypes =>
+        this.operatingSystemTypes ??= new Repository<OperatingSystemType>(this.context);
 
     public async Task<int> SaveChangesAsync()
     {

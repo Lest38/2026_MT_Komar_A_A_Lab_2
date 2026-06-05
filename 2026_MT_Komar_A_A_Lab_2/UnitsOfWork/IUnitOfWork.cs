@@ -25,6 +25,8 @@ public interface IUnitOfWork : IDisposable
 
     IIssueCodeRepository IssueCodes { get; }
 
+    IRepository<OperatingSystemType> OperatingSystemTypes { get; }
+
     Task<int> SaveChangesAsync();
 
     Task BeginTransactionAsync();
